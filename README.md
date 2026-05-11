@@ -44,15 +44,3 @@ cp .env.example .env    # Fill in your values
 python seed_safety.py   # Add sample safety data
 uvicorn main:socket_app --host 0.0.0.0 --port 8000
 ```
-
-## 👥 Team — ŞARJÖR
-
-| Name | Role |
-|---|---|
-| Kusai Aksoy | Team Lead |
-| Hashem Salem | Data Model |
-| Namık Hasan | UML Diagrams |
-| Rama Hasanatu | UI Design |
-| Melih Kamil Uslu | Documentation & UI |
-
-> Kocaeli Sağlık ve Teknoloji Üniversitesi — Software Engineering Lab II — 2026
