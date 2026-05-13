@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="tr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>UniEv - Ev Arkadaşı Eşleştirme</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="/static/css/mobile.css">
+</head>
+<body class="bg-slate-50 min-h-screen">
+<header class="bg-white border-b border-slate-200 sticky top-0 z-50">
+<div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<a href="/">
+<img alt="UniEv Logo" class="h-30 w-30 object-contain" src="/static/images/Logo.png" onerror="this.style.display='none'"/>
+</a>
+</div>
+<nav class="flex items-center space-x-6 text-sm font-medium text-slate-600" id="mainNav">
+<!-- Navigation will be dynamically populated -->
+</nav>
+</div>
+</header>
+<main class="max-w-7xl mx-auto px-4 py-8">
+<div class="text-center mb-8">
+<h1 class="text-3xl font-bold text-slate-900 mb-2">Ev Arkadaşı Eşleştirme</h1>
+<p class="text-slate-600">Yaşam tarzınıza uygun ev arkadaşları bulun</p>
+</div>
+<div id="matches" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+</main>
+<script>
+// Check authentication on page load
+const token = localStorage.getItem('token');
+if (!token) {
+    window.location.href = '/login';
+}
+
+const userStr = localStorage.getItem('user');
+const user = userStr ? JSON.parse(userStr) : null;
+
+// Dynamic navigation based on role
+function setupNavigation() {
+    const nav = document.getElementById('mainNav');
+    const activeClass = 'text-teal-700 border-b-2 border-teal-700 pb-1';
+    const normalClass = 'hover:text-slate-900';
+    
+    if (!user) {
+        nav.innerHTML = `
+            <a class="${normalClass}" href="/">Ana Sayfa</a>
+            <a class="${normalClass}" href="/listings">İlanlar</a>
+            <a class="${normalClass}" href="/help">Yardım</a>
+            <a class="${normalClass}" href="/login">Giriş</a>
+            <a class="${normalClass}" href="/register">Kayıt Ol</a>
+        `;
+        return;
+    }
+    
+    if (user.role === 'LANDLORD') {
+        // Landlords don't have access to match page - redirect
+        window.location.href = '/listings';
+        return;
+    } else if (user.role === 'ADMIN') {
+        nav.innerHTML = `
+            <a class="${normalClass}" href="/">Ana Sayfa</a>
+            <a class="${normalClass}" href="/listings">İlanlar</a>
+            <a class="${normalClass}" href="/admin">Admin Panel</a>
+            <a class="${normalClass}" href="/messages">Mesajlar</a>
+            <a class="${normalClass}" href="/profile">Profil</a>
+            <a class="${normalClass}" href="/help">Yardım</a>
+            <a class="${normalClass}" href="#" onclick="logout()">Çıkış</a>
+        `;
+    } else {
+        // STUDENT
+        nav.innerHTML = `
+            <a class="${normalClass}" href="/">Ana Sayfa</a>
+            <a class="${normalClass}" href="/listings">İlanlar</a>
+            <a class="${activeClass}" href="/match">Eşleşme</a>
+            <a class="${normalClass}" href="/messages">Mesajlar</a>
+            <a class="${normalClass}" href="/profile">Profil</a>
+            <a class="${normalClass}" href="/help">Yardım</a>
+            <a class="${normalClass}" href="#" onclick="logout()">Çıkış</a>
+        `;
+    }
+}
+
+setupNavigation();
+
+function logout() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.href = '/login';
+}
+
+// Turkish translations for profile fields
+function translateSleepSchedule(value) {
+    const translations = {
+        'EARLY_BIRD': 'Sabahçı',
+        'NIGHT_OWL': 'Gececi',
+        'FLEXIBLE': 'Esnek'
+    };
+    return translations[value] || value || 'Belirtilmemiş';
+}
+
+function translateCleanliness(value) {
+    const translations = {
+        'LOW': 'Düşük',
+        'MEDIUM': 'Orta',
+        'HIGH': 'Yüksek'
+    };
+    return translations[value] || value || 'Belirtilmemiş';
+}
+
+async function loadMatches() {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        window.location.href = '/login';
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/match/suggestions', {
+            headers: {'Authorization': `Bearer ${token}`}
+        });
+        
+        if (response.status === 401) {
+            // Token expired or invalid
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/login';
+            return;
+        }
+        
+        if (response.status === 403) {
+            // User not verified
+            const container = document.getElementById('matches');
+            container.innerHTML = `
+                <div class="col-span-full">
+                    <div class="bg-amber-50 border border-amber-200 rounded-xl p-8 text-center">
+                        <div class="text-4xl mb-4">📧</div>
+                        <h3 class="text-xl font-bold text-amber-900 mb-2">E-posta Doğrulaması Gerekli</h3>
+                        <p class="text-amber-700 mb-4">Ev arkadaşı eşleştirme özelliğini kullanmak için e-posta adresinizi doğrulamanız gerekiyor.</p>
+                        <p class="text-sm text-amber-600">Kayıt olurken kullandığınız e-posta adresine gönderilen doğrulama linkine tıklayın.</p>
+                    </div>
+                </div>
+            `;
+            return;
+        }
+        
+        const data = await response.json();
+        const container = document.getElementById('matches');
+        
+        // Check if profile exists and is complete
+        if (data.has_profile === false || data.is_complete === false) {
+            // Determine which fields are missing
+            let missingFields = [];
+            if (data.has_profile === false) {
+                missingFields = ['Tüm profil bilgileri'];
+            } else {
+                // We need to fetch the profile to see what's missing
+                try {
+                    const profileResponse = await fetch('/api/users/profile', {
+                        headers: {'Authorization': `Bearer ${token}`}
+                    });
+                    if (profileResponse.ok) {
+                        const profile = await profileResponse.json();
+                        if (!profile.budget_min || !profile.budget_max) missingFields.push('Bütçe (Min ve Max)');
+                        if (profile.smoking_ok === null || profile.smoking_ok === undefined) missingFields.push('Sigara tercihi (kutucuğu işaretleyin veya boş bırakın)');
+                        if (profile.pet_ok === null || profile.pet_ok === undefined) missingFields.push('Evcil hayvan tercihi (kutucuğu işaretleyin veya boş bırakın)');
+                        if (!profile.sleep_schedule || profile.sleep_schedule === '') missingFields.push('Uyku düzeni (bir seçenek seçin)');
+                        if (!profile.cleanliness || profile.cleanliness === '') missingFields.push('Temizlik hassasiyeti (bir seçenek seçin)');
+                    }
+                } catch (e) {
+                    console.error('Error fetching profile:', e);
+                }
+            }
+            
+            const missingFieldsList = missingFields.length > 0 
+                ? `<ul class="text-left mt-4 space-y-2">${missingFields.map(f => `<li class="flex items-center gap-2"><span class="text-red-500">✗</span> ${f}</li>`).join('')}</ul>`
+                : '';
+            
+            container.innerHTML = `
+                <div class="col-span-full">
+                    <div class="bg-white rounded-xl border border-slate-100 p-8 md:p-12 text-center">
+                        <div class="text-6xl mb-4">📝</div>
+                        <h3 class="text-xl font-bold text-slate-900 mb-2">Profil Tamamlanmamış</h3>
+                        <p class="text-slate-600 mb-4">Ev arkadaşı eşleştirme özelliğini kullanmak için profilinizi tamamlamanız gerekiyor.</p>
+                        ${missingFieldsList}
+                        <p class="text-sm text-slate-500 mt-6 mb-6">Lütfen profil sayfanızda aşağıdaki bilgileri ekleyin:</p>
+                        <div class="bg-slate-50 rounded-lg p-4 mb-6 text-left max-w-md mx-auto">
+                            <div class="space-y-2 text-sm">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-teal-600">✓</span>
+                                    <span>Bütçe aralığı (Min ve Max)</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-teal-600">✓</span>
+                                    <span>Sigara tercihi (işaretle veya boş bırak)</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-teal-600">✓</span>
+                                    <span>Evcil hayvan tercihi (işaretle veya boş bırak)</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-teal-600">✓</span>
+                                    <span>Uyku düzeni (Erken kalkan / Gece kuşu / Esnek)</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-teal-600">✓</span>
+                                    <span>Temizlik hassasiyeti (Düşük / Orta / Yüksek)</span>
+                                </div>
+                            </div>
+                        </div>
+                        <a href="/profile" class="inline-block bg-teal-700 text-white px-6 py-3 rounded-lg hover:bg-teal-800 transition-colors">
+                            Profili Tamamla
+                        </a>
+                    </div>
+                </div>
+            `;
+            return;
+        }
+        
+        // Profile is complete, show matches or no matches message
+        if (data.matches && data.matches.length > 0) {
+            container.innerHTML = data.matches.map(match => `
+                <div class="bg-white rounded-xl border border-slate-100 p-6 hover:shadow-lg transition-shadow">
+                    <div class="flex items-center gap-4 mb-4">
+                        <a href="/user/${match.user_id}" class="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center text-2xl hover:bg-teal-200 transition-colors cursor-pointer" title="Profili Görüntüle">
+                            👤
+                        </a>
+                        <div class="flex-1">
+                            <a href="/user/${match.user_id}" class="hover:text-teal-700 transition-colors">
+                                <h3 class="font-bold text-lg">${match.first_name} ${match.last_name}</h3>
+                            </a>
+                            <div class="text-teal-700 font-semibold">Uyum: ${match.score}%</div>
+                        </div>
+                    </div>
+                    <p class="text-slate-600 text-sm mb-4">${match.bio || 'Biyografi yok'}</p>
+                    <div class="space-y-2 text-sm">
+                        <div><span class="font-semibold">Bütçe:</span> ₺${match.budget_min?.toLocaleString('tr-TR') || '?'} - ₺${match.budget_max?.toLocaleString('tr-TR') || '?'}</div>
+                        <div><span class="font-semibold">Uyku:</span> ${translateSleepSchedule(match.sleep_schedule)}</div>
+                        <div><span class="font-semibold">Temizlik:</span> ${translateCleanliness(match.cleanliness)}</div>
+                    </div>
+                    <button onclick="window.location.href='/messages?with=${match.user_id}'" class="w-full mt-4 bg-teal-700 text-white py-2 rounded-lg hover:bg-teal-800 transition-colors">
+                        Mesaj Gönder
+                    </button>
+                </div>
+            `).join('');
+        } else {
+            // Profile is complete but no matches found
+            container.innerHTML = `
+                <div class="col-span-full">
+                    <div class="bg-white rounded-xl border border-slate-100 p-12 text-center">
+                        <div class="text-6xl mb-4">🔍</div>
+                        <h3 class="text-xl font-bold text-slate-900 mb-2">Henüz Eşleşme Bulunamadı</h3>
+                        <p class="text-slate-600 mb-6">Şu anda size uygun ev arkadaşı bulunamadı. Daha sonra tekrar kontrol edin veya tercihlerinizi güncelleyin.</p>
+                        <a href="/profile" class="inline-block bg-teal-700 text-white px-6 py-3 rounded-lg hover:bg-teal-800 transition-colors">
+                            Profili Düzenle
+                        </a>
+                    </div>
+                </div>
+            `;
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        const container = document.getElementById('matches');
+        container.innerHTML = `
+            <div class="col-span-full">
+                <div class="bg-red-50 border border-red-200 rounded-xl p-8 text-center">
+                    <p class="text-red-600">Eşleşmeler yüklenirken bir hata oluştu.</p>
+                </div>
+            </div>
+        `;
+    }
+}
+
+loadMatches();
+</script>
+<script src="/static/js/mobile-menu.js"></script>
+</body></html>

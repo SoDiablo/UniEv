@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>UniEv - İlan Oluştur</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!-- Preconnect to Google Maps servers for faster loading -->
+<link rel="preconnect" href="https://mt0.google.com">
+<link rel="preconnect" href="https://mt1.google.com">
+<link rel="preconnect" href="https://mt2.google.com">
+<link rel="preconnect" href="https://mt3.google.com">
+<style data-purpose="custom-colors">
+    /* Fix Leaflet map z-index issue */
+    .leaflet-pane,
+    .leaflet-top,
+    .leaflet-bottom {
+        z-index: 1 !important;
+    }
+    .leaflet-control-container {
+        z-index: 2 !important;
+    }
+</style>
+<style data-purpose="custom-colors">
+    .bg-uniev-teal {
+      background-color: #0d6e6e;
+    }
+    .bg-uniev-teal:hover {
+      background-color: #0a5a5a;
+    }
+    .active-nav-link {
+      background-color: #e6f4f1;
+      color: #0d6e6e;
+    }
+    .navbar-gradient {
+      background: linear-gradient(90deg, #0f766e 0%, #14b8a6 50%, #0f766e 100%);
+      height: 3px;
+    }
+    /* Custom notification */
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: linear-gradient(135deg, #0f766e 0%, #14b8a6 100%);
+      color: white;
+      padding: 16px 24px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 9999;
+      animation: slideIn 0.3s ease-out;
+      max-width: 400px;
+    }
+    @keyframes slideIn {
+      from {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+    .notification.hide {
+      animation: slideOut 0.3s ease-out forwards;
+    }
+    @keyframes slideOut {
+      to {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+    }
+  </style>
+<link rel="stylesheet" href="/static/css/mobile.css">
+</head>
+<body class="bg-slate-50 min-h-screen font-sans text-slate-700 flex flex-col">
+<header class="bg-white border-b border-slate-200 sticky top-0 z-50" data-purpose="navigation-header">
+<div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<a href="/">
+<img alt="UniEv Logo" class="h-30 w-30 object-contain cursor-pointer" src="/static/images/Logo.png" onerror="this.style.display='none'"/>
+</a>
+</div>
+<nav class="flex items-center space-x-6 text-sm font-medium text-slate-500" data-purpose="main-nav" id="mainNav">
+<!-- Navigation will be dynamically populated -->
+</nav>
+</div>
+<div class="navbar-gradient"></div>
+</header>
+
+<main class="flex-grow max-w-4xl mx-auto py-10 px-4 w-full" data-purpose="create-listing-form">
+<div class="mb-8">
+<h1 class="text-3xl font-bold text-slate-800 mb-2">Yeni İlan Oluştur</h1>
+<p class="text-slate-600">Konut ilanınızı oluşturun ve öğrencilere ulaşın</p>
+</div>
+
+<section class="bg-white rounded-2xl shadow-sm border border-slate-100 p-8" data-purpose="listing-form">
+<form class="space-y-6" id="listingForm">
+<!-- Title -->
+<div class="space-y-2">
+<label class="block text-sm font-semibold text-slate-600" for="title">İlan Başlığı <span class="text-red-500">*</span></label>
+<input class="w-full rounded-lg border-slate-200 focus:border-teal-600 focus:ring-teal-600" id="title" type="text" placeholder="Örn: Üniversiteye Yakın 2+1 Daire" required/>
+</div>
+
+<!-- Description -->
+<div class="space-y-2">
+<label class="block text-sm font-semibold text-slate-600" for="description">Açıklama <span class="text-red-500">*</span></label>
+<textarea class="w-full rounded-lg border-slate-200 focus:border-teal-600 focus:ring-teal-600" id="description" rows="6" placeholder="İlan detaylarını yazın... (En az 100 karakter önerilir)" required></textarea>
+<p class="text-xs text-slate-400" id="charCount">0 karakter</p>
+</div>
+
+<!-- Price -->
+<div class="space-y-2">
+<label class="block text-sm font-semibold text-slate-600" for="price">Aylık Kira (₺) <span class="text-red-500">*</span></label>
+<input class="w-full rounded-lg border-slate-200 focus:border-teal-600 focus:ring-teal-600" id="price" type="number" min="1000" max="50000" placeholder="5000" required/>
+<p class="text-xs text-slate-400">Önerilen aralık: 1.000 - 50.000 TL</p>
+</div>
+
+<!-- Location -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="space-y-2">
+<label class="block text-sm font-semibold text-slate-600" for="city">Şehir <span class="text-red-500">*</span></label>
+<input class="w-full rounded-lg border-slate-200 focus:border-teal-600 focus:ring-teal-600" id="city" type="text" placeholder="İstanbul" required/>
+</div>
+<div class="space-y-2">
+<label class="block text-sm font-semibold text-slate-600" for="district">İlçe <span class="text-red-500">*</span></label>
+<input class="w-full rounded-lg border-slate-200 focus:border-teal-600 focus:ring-teal-600" id="district" type="text" placeholder="Kadıköy" required/>
+</div>
+</div>
+
+<!-- Address -->
+<div class="space-y-2">
+<label class="block text-sm font-semibold text-slate-600" for="address">Adres</label>
+<input class="w-full rounded-lg border-slate-200 focus:border-teal-600 focus:ring-teal-600" id="address" type="text" placeholder="Sokak, mahalle bilgisi"/>
+</div>
+
+<!-- Map Location Picker -->
+<div class="space-y-2">
+<label class="block text-sm font-semibold text-slate-600">Konum <span class="text-red-500">*</span></label>
+<p class="text-xs text-slate-500 mb-2">Haritada konumu seçin, GPS ile konumunuzu alın veya koordinatları manuel girin</p>
+
+<!-- Get My Location Button -->
+<button type="button" onclick="getMyLocation()" class="mb-3 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg flex items-center gap-2 transition-colors text-sm font-semibold">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+</svg>
+Konumumu Al
+</button>
+
+<!-- Manual coordinate inputs -->
+<div class="grid grid-cols-2 gap-4 mb-3">
+<div>
+<label class="block text-xs text-slate-500 mb-1">Enlem (Latitude) <span class="text-red-500">*</span></label>
+<input id="latitude" class="w-full rounded-lg border-slate-200 focus:border-teal-600 focus:ring-teal-600 text-sm" type="number" step="0.000001" placeholder="41.008240" required />
+</div>
+<div>
+<label class="block text-xs text-slate-500 mb-1">Boylam (Longitude) <span class="text-red-500">*</span></label>
+<input id="longitude" class="w-full rounded-lg border-slate-200 focus:border-teal-600 focus:ring-teal-600 text-sm" type="number" step="0.000001" placeholder="28.978359" required />
+</div>
+</div>
+
+<!-- Map -->
+<div id="map" class="w-full h-96 rounded-xl border-2 border-teal-200 shadow-lg"></div>
+<p class="text-xs text-slate-500 mt-2">💡 Haritada tıklayarak konum seçebilirsiniz</p>
+</div>
+
+<!-- Rules -->
+<div class="space-y-2">
+<label class="block text-sm font-semibold text-slate-600" for="rules">Ev Kuralları</label>
+<textarea class="w-full rounded-lg border-slate-200 focus:border-teal-600 focus:ring-teal-600" id="rules" rows="4" placeholder="Sigara içilmez, evcil hayvan kabul edilmez, vb."></textarea>
+</div>
+
+<!-- Photo Upload -->
+<div class="space-y-4">
+<label class="block text-sm font-semibold text-slate-600">Fotoğraflar</label>
+
+<!-- Cover Photo -->
+<div class="space-y-2">
+<label class="block text-xs font-semibold text-slate-500">Kapak Fotoğrafı (İlan listesinde görünür)</label>
+<div class="border-2 border-dashed border-slate-300 rounded-lg p-4 hover:border-teal-500 transition-colors">
+<div id="coverPhotoPreview" class="hidden mb-3">
+<img id="coverPhotoImg" class="w-full h-48 object-cover rounded-lg" />
+<button type="button" onclick="removeCoverPhoto()" class="mt-2 text-sm text-red-600 hover:text-red-700">✕ Kaldır</button>
+</div>
+<button type="button" onclick="selectCoverPhoto()" class="w-full py-3 bg-slate-100 hover:bg-slate-200 rounded-lg flex items-center justify-center gap-2 transition-colors">
+<span class="text-2xl">+</span>
+<span class="font-semibold text-slate-700">Kapak Fotoğrafı Ekle</span>
+</button>
+<input type="file" id="coverPhotoInput" accept="image/*" class="hidden" onchange="handleCoverPhoto(event)" />
+</div>
+</div>
+
+<!-- Detail Photos -->
+<div class="space-y-2">
+<label class="block text-xs font-semibold text-slate-500">Detay Fotoğrafları (İlan detayında görünür)</label>
+<div class="border-2 border-dashed border-slate-300 rounded-lg p-4 hover:border-teal-500 transition-colors">
+<div id="detailPhotosPreview" class="grid grid-cols-3 gap-3 mb-3 hidden"></div>
+<button type="button" onclick="selectDetailPhotos()" class="w-full py-3 bg-slate-100 hover:bg-slate-200 rounded-lg flex items-center justify-center gap-2 transition-colors">
+<span class="text-2xl">+</span>
+<span class="font-semibold text-slate-700">Daha Fazla Fotoğraf Ekle</span>
+</button>
+<input type="file" id="detailPhotosInput" accept="image/*" multiple class="hidden" onchange="handleDetailPhotos(event)" />
+<p class="text-xs text-slate-400 mt-2">Birden fazla fotoğraf seçebilirsiniz</p>
+</div>
+</div>
+</div>
+
+<!-- Submit Button -->
+<div class="pt-4 flex gap-4">
+<button class="flex-1 py-3 px-4 rounded-xl text-white font-semibold bg-gradient-to-r from-teal-700 to-teal-600 shadow-md transition-all active:scale-[0.98] hover:from-teal-800 hover:to-teal-700" type="submit">
+İlanı Yayınla
+</button>
+<a href="/listings" class="flex-1 py-3 px-4 rounded-xl text-slate-600 font-semibold bg-slate-100 shadow-md transition-all active:scale-[0.98] hover:bg-slate-200 text-center">
+İptal
+</a>
+</div>
+</form>
+</section>
+</main>
+
+<footer class="mt-auto bg-gradient-to-r from-teal-800 to-teal-700 py-12 px-4 border-t border-slate-200" data-purpose="site-footer">
+<div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-white">
+<div data-purpose="copyright-info">
+© 2026 UniEv - Öğrenciler için güvenli konut platformu
+</div>
+<nav class="flex flex-wrap justify-center gap-4" data-purpose="footer-nav">
+<a class="hover:text-teal-200 transition-colors" href="#">KVKK</a>
+<a class="hover:text-teal-200 transition-colors" href="#">Gizlilik</a>
+<a class="hover:text-teal-200 transition-colors" href="#">Çerez Politikası</a>
+<a class="hover:text-teal-200 transition-colors" href="#">Kullanım Koşulları</a>
+<a class="hover:text-teal-200 transition-colors" href="/help">Yardım</a>
+</nav>
+</div>
+</footer>
+
+<script>
+// Custom notification function
+function showNotification(message, type = 'success') {
+    const notification = document.createElement('div');
+    notification.className = 'notification';
+    notification.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="font-size: 24px;">${type === 'success' ? '✓' : '⚠'}</div>
+            <div style="flex: 1; color: white;">${message}</div>
+        </div>
+    `;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.classList.add('hide');
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+
+// Check authentication and role
+const token = localStorage.getItem('token');
+const userStr = localStorage.getItem('user');
+
+if (!token || !userStr) {
+    window.location.href = '/login';
+}
+
+const user = JSON.parse(userStr);
+
+// Check if user is LANDLORD
+if (user.role !== 'LANDLORD') {
+    showNotification('Bu sayfaya erişim yetkiniz yok', 'error');
+    setTimeout(() => {
+        window.location.href = '/listings';
+    }, 1500);
+}
+
+// Dynamic navigation based on role
+function setupNavigation() {
+    const nav = document.getElementById('mainNav');
+    
+    if (user.role === 'LANDLORD') {
+        nav.innerHTML = `
+            <a class="hover:text-slate-900" href="/">Ana Sayfa</a>
+            <a class="hover:text-slate-900" href="/listings">İlanlar</a>
+            <a class="px-4 py-1.5 rounded-full active-nav-link" href="/create-listing">İlan Oluştur</a>
+            <a class="hover:text-slate-900" href="/messages">Mesajlar</a>
+            <a class="hover:text-slate-900" href="/profile">Profil</a>
+            <a class="hover:text-slate-900" href="/help">Yardım</a>
+            <a class="hover:text-slate-900" href="#" onclick="logout()">Çıkış</a>
+        `;
+    } else {
+        nav.innerHTML = `
+            <a class="hover:text-slate-900" href="/">Ana Sayfa</a>
+            <a class="hover:text-slate-900" href="/listings">İlanlar</a>
+            <a class="hover:text-slate-900" href="/match">Eşleşme</a>
+            <a class="hover:text-slate-900" href="/messages">Mesajlar</a>
+            <a class="hover:text-slate-900" href="/profile">Profil</a>
+            <a class="hover:text-slate-900" href="/help">Yardım</a>
+            <a class="hover:text-slate-900" href="#" onclick="logout()">Çıkış</a>
+        `;
+    }
+}
+
+setupNavigation();
+
+function logout() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.href = '/login';
+}
+
+// Character counter
+document.getElementById('description').addEventListener('input', (e) => {
+    document.getElementById('charCount').textContent = `${e.target.value.length} karakter`;
+});
+
+// Initialize Leaflet Map with Google Maps background
+let map, marker;
+const defaultCenter = [41.0082, 28.9784]; // Istanbul
+
+function initializeMap() {
+    // Create map
+    map = L.map('map', {
+        preferCanvas: true, // Use canvas for better performance
+        zoomControl: true
+    }).setView(defaultCenter, 12);
+    
+    // Use Google Maps tile layer with optimized settings for faster loading
+    L.tileLayer('https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+        attribution: '© Google Maps',
+        subdomains: ['0', '1', '2', '3'], // Use multiple servers for parallel loading
+        maxZoom: 20,
+        minZoom: 3,
+        updateWhenIdle: false, // Load tiles while panning
+        updateWhenZooming: false, // Don't wait for zoom to finish
+        keepBuffer: 2 // Keep tiles in buffer for smoother experience
+    }).addTo(map);
+    
+    // Add click event to map
+    map.on('click', function(e) {
+        placeMarker(e.latlng.lat, e.latlng.lng);
+    });
+}
+
+function placeMarker(lat, lng) {
+    // Remove existing marker
+    if (marker) {
+        map.removeLayer(marker);
+    }
+    
+    // Create custom teal icon
+    const tealIcon = L.divIcon({
+        className: 'custom-marker',
+        html: '<div style="background-color: #0d6e6e; width: 24px; height: 24px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.3);"></div>',
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+    });
+    
+    // Add new marker
+    marker = L.marker([lat, lng], { icon: tealIcon }).addTo(map);
+    
+    // Update inputs
+    document.getElementById('latitude').value = lat.toFixed(6);
+    document.getElementById('longitude').value = lng.toFixed(6);
+    
+    // Center map on marker
+    map.setView([lat, lng], 15);
+}
+
+function getMyLocation() {
+    if (!navigator.geolocation) {
+        showNotification('Tarayıcınız konum özelliğini desteklemiyor', 'error');
+        return;
+    }
+    
+    showNotification('Konumunuz alınıyor...', 'success');
+    
+    navigator.geolocation.getCurrentPosition(
+        (position) => {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            
+            // Update inputs
+            document.getElementById('latitude').value = lat.toFixed(6);
+            document.getElementById('longitude').value = lng.toFixed(6);
+            
+            // Place marker on map
+            placeMarker(lat, lng);
+            
+            showNotification('Konumunuz başarıyla alındı!', 'success');
+        },
+        (error) => {
+            console.error('Geolocation error:', error);
+            let errorMsg = 'Konum alınamadı.';
+            if (error.code === 1) {
+                errorMsg = 'Konum izni reddedildi. Lütfen tarayıcı ayarlarından izin verin.';
+            } else if (error.code === 2) {
+                errorMsg = 'Konum bilgisi alınamadı.';
+            } else if (error.code === 3) {
+                errorMsg = 'Konum alma zaman aşımına uğradı.';
+            }
+            showNotification(errorMsg, 'error');
+        },
+        {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0
+        }
+    );
+}
+
+// Initialize map when page loads
+window.addEventListener('load', initializeMap);
+
+// Photo upload variables
+let coverPhotoFile = null;
+let detailPhotoFiles = [];
+
+function selectCoverPhoto() {
+    document.getElementById('coverPhotoInput').click();
+}
+
+function handleCoverPhoto(event) {
+    const file = event.target.files[0];
+    if (file) {
+        coverPhotoFile = file;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            document.getElementById('coverPhotoImg').src = e.target.result;
+            document.getElementById('coverPhotoPreview').classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+function removeCoverPhoto() {
+    coverPhotoFile = null;
+    document.getElementById('coverPhotoPreview').classList.add('hidden');
+    document.getElementById('coverPhotoInput').value = '';
+}
+
+function selectDetailPhotos() {
+    document.getElementById('detailPhotosInput').click();
+}
+
+function handleDetailPhotos(event) {
+    const files = Array.from(event.target.files);
+    // Add new files to existing array instead of replacing
+    detailPhotoFiles = [...detailPhotoFiles, ...files];
+    
+    const preview = document.getElementById('detailPhotosPreview');
+    preview.innerHTML = '';
+    preview.classList.remove('hidden');
+    
+    detailPhotoFiles.forEach((file, index) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const div = document.createElement('div');
+            div.className = 'relative';
+            div.innerHTML = `
+                <img src="${e.target.result}" class="w-full h-24 object-cover rounded-lg" />
+                <button type="button" onclick="removeDetailPhoto(${index})" class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600">✕</button>
+            `;
+            preview.appendChild(div);
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+function removeDetailPhoto(index) {
+    detailPhotoFiles.splice(index, 1);
+    document.getElementById('detailPhotosInput').value = '';
+    
+    // Re-render preview
+    const preview = document.getElementById('detailPhotosPreview');
+    preview.innerHTML = '';
+    
+    if (detailPhotoFiles.length === 0) {
+        preview.classList.add('hidden');
+        return;
+    }
+    
+    detailPhotoFiles.forEach((file, idx) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const div = document.createElement('div');
+            div.className = 'relative';
+            div.innerHTML = `
+                <img src="${e.target.result}" class="w-full h-24 object-cover rounded-lg" />
+                <button type="button" onclick="removeDetailPhoto(${idx})" class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600">✕</button>
+            `;
+            preview.appendChild(div);
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+// Form submission
+document.getElementById('listingForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    // Upload photos first
+    const photo_urls = [];
+    
+    try {
+        // Upload cover photo
+        if (coverPhotoFile) {
+            const coverFormData = new FormData();
+            coverFormData.append('file', coverPhotoFile);
+            
+            const coverResponse = await fetch('/api/upload/image', {
+                method: 'POST',
+                headers: {'Authorization': `Bearer ${token}`},
+                body: coverFormData
+            });
+            
+            if (coverResponse.ok) {
+                const coverData = await coverResponse.json();
+                photo_urls.push(coverData.url);
+            }
+        }
+        
+        // Upload detail photos
+        for (const file of detailPhotoFiles) {
+            const detailFormData = new FormData();
+            detailFormData.append('file', file);
+            
+            const detailResponse = await fetch('/api/upload/image', {
+                method: 'POST',
+                headers: {'Authorization': `Bearer ${token}`},
+                body: detailFormData
+            });
+            
+            if (detailResponse.ok) {
+                const detailData = await detailResponse.json();
+                photo_urls.push(detailData.url);
+            }
+        }
+    } catch (error) {
+        console.error('Photo upload error:', error);
+        showNotification('Fotoğraflar yüklenirken hata oluştu', 'error');
+        return;
+    }
+    
+    const formData = {
+        title: document.getElementById('title').value,
+        description: document.getElementById('description').value,
+        price: parseInt(document.getElementById('price').value),
+        city: document.getElementById('city').value,
+        district: document.getElementById('district').value,
+        address: document.getElementById('address').value || null,
+        latitude: parseFloat(document.getElementById('latitude').value) || null,
+        longitude: parseFloat(document.getElementById('longitude').value) || null,
+        rules: document.getElementById('rules').value || null,
+        photo_urls: photo_urls
+    };
+    
+    // Validation
+    if (formData.description.length < 50) {
+        showNotification('Açıklama en az 50 karakter olmalıdır', 'error');
+        return;
+    }
+    
+    if (formData.price < 1000 || formData.price > 50000) {
+        showNotification('Fiyat 1.000 - 50.000 TL aralığında olmalıdır', 'error');
+        return;
+    }
+    
+    if (!formData.latitude || !formData.longitude) {
+        showNotification('Lütfen haritadan konum seçin', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/listings', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(formData)
+        });
+        
+        if (response.status === 401) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/login';
+            return;
+        }
+        
+        if (response.ok) {
+            const listing = await response.json();
+            showNotification('İlan başarıyla oluşturuldu!', 'success');
+            setTimeout(() => {
+                window.location.href = `/listing/${listing.id}`;
+            }, 1500);
+        } else {
+            const error = await response.json();
+            showNotification(error.detail || 'İlan oluşturulamadı', 'error');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showNotification('Bir hata oluştu. Lütfen tekrar deneyin.', 'error');
+    }
+});
+</script>
+<script src="/static/js/mobile-menu.js"></script>
+</body>
+</html>

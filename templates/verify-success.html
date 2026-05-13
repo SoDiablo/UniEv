@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>UniEv - E-posta Doğrulandı</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .success-animation {
+            animation: scaleIn 0.5s ease-out;
+        }
+        @keyframes scaleIn {
+            from {
+                transform: scale(0);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-teal-50 to-teal-100 min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl p-8 md:p-12 max-w-md w-full text-center">
+        <!-- Success Icon -->
+        <div class="success-animation mb-6">
+            <div class="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto">
+                <svg class="w-12 h-12 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                </svg>
+            </div>
+        </div>
+        
+        <!-- Title -->
+        <h1 class="text-3xl font-bold text-gray-900 mb-4">
+            E-posta Doğrulandı!
+        </h1>
+        
+        <!-- Message -->
+        <p class="text-gray-600 mb-8">
+            E-posta adresiniz başarıyla doğrulandı. Artık UniEv'in tüm özelliklerini kullanabilirsiniz.
+        </p>
+        
+        <!-- Action Buttons -->
+        <div class="space-y-3">
+            <a href="/listings" class="block w-full bg-gradient-to-r from-teal-700 to-teal-600 text-white font-semibold py-3 px-6 rounded-lg hover:from-teal-800 hover:to-teal-700 transition-all shadow-md">
+                İlanları Keşfet
+            </a>
+            <a href="/profile" class="block w-full bg-gray-100 text-gray-700 font-semibold py-3 px-6 rounded-lg hover:bg-gray-200 transition-all">
+                Profilime Git
+            </a>
+        </div>
+        
+        <!-- Footer -->
+        <div class="mt-8 pt-6 border-t border-gray-200">
+            <p class="text-sm text-gray-500">
+                <a href="/" class="text-teal-600 hover:text-teal-700 font-medium">Ana Sayfaya Dön</a>
+            </p>
+        </div>
+    </div>
+    
+    <!-- Removed auto-redirect - user can choose when to leave -->
+</body>
+</html>

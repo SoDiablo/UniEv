@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="tr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>UniEv - Admin Panel</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+</head>
+<body class="bg-slate-50 min-h-screen">
+<header class="bg-white border-b border-slate-200">
+<div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<a href="/">
+<img alt="UniEv Logo" class="h-30 w-30 object-contain" src="/static/images/Logo.png" onerror="this.style.display='none'"/>
+</a>
+</div>
+<a class="text-sm text-slate-600 hover:text-slate-900" href="#" onclick="logout()">Çıkış</a>
+</div>
+</header>
+<main class="max-w-7xl mx-auto px-4 py-8">
+<h1 class="text-3xl font-bold mb-8">Admin Dashboard</h1>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+<div class="bg-white rounded-xl border border-slate-100 p-6">
+<div class="text-slate-600 text-sm mb-2">Toplam Kullanıcı</div>
+<div class="text-3xl font-bold" id="total_users">-</div>
+</div>
+<div class="bg-white rounded-xl border border-slate-100 p-6">
+<div class="text-slate-600 text-sm mb-2">Toplam İlan</div>
+<div class="text-3xl font-bold" id="total_listings">-</div>
+</div>
+<div class="bg-white rounded-xl border border-slate-100 p-6">
+<div class="text-slate-600 text-sm mb-2">Bekleyen Raporlar</div>
+<div class="text-3xl font-bold text-red-600" id="pending_reports">-</div>
+</div>
+</div>
+<div class="bg-white rounded-xl border border-slate-100 p-6">
+<h2 class="text-xl font-bold mb-4">Bekleyen Raporlar</h2>
+<div id="reports"></div>
+</div>
+</main>
+<script>
+function logout() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.href = '/login';
+}
+
+async function loadStats() {
+    const token = localStorage.getItem('token');
+    try {
+        const response = await fetch('/api/admin/stats', {
+            headers: {'Authorization': `Bearer ${token}`}
+        });
+        const data = await response.json();
+        document.getElementById('total_users').textContent = data.total_users;
+        document.getElementById('total_listings').textContent = data.total_listings;
+        document.getElementById('pending_reports').textContent = data.pending_reports;
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
+async function loadReports() {
+    const token = localStorage.getItem('token');
+    try {
+        const response = await fetch('/api/admin/reports', {
+            headers: {'Authorization': `Bearer ${token}`}
+        });
+        const data = await response.json();
+        const container = document.getElementById('reports');
+        if (data.reports && data.reports.length > 0) {
+            container.innerHTML = data.reports.map(report => `
+                <div class="border-b border-slate-100 py-4">
+                    <div class="font-semibold">${report.report_type}</div>
+                    <div class="text-sm text-slate-600">${report.description || 'Açıklama yok'}</div>
+                    <div class="mt-2 flex gap-2">
+                        <button onclick="resolveReport('${report.id}', 'APPROVE')" class="text-sm bg-green-600 text-white px-4 py-1 rounded">Onayla</button>
+                        <button onclick="resolveReport('${report.id}', 'SUSPEND')" class="text-sm bg-yellow-600 text-white px-4 py-1 rounded">Askıya Al</button>
+                        <button onclick="resolveReport('${report.id}', 'DELETE')" class="text-sm bg-red-600 text-white px-4 py-1 rounded">Sil</button>
+                    </div>
+                </div>
+            `).join('');
+        } else {
+            container.innerHTML = '<p class="text-slate-500">Bekleyen rapor yok</p>';
+        }
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
+async function resolveReport(reportId, action) {
+    const token = localStorage.getItem('token');
+    try {
+        await fetch(`/api/admin/reports/${reportId}/resolve`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({action})
+        });
+        loadReports();
+        loadStats();
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
+loadStats();
+loadReports();
+</script>
+</body></html>

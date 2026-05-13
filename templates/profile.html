@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="tr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>UniEv - Profil Ayarları</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script src="/static/js/toast.js"></script>
+<style data-purpose="custom-colors">
+    .bg-uniev-teal {
+      background-color: #0d6e6e;
+    }
+    .bg-uniev-teal:hover {
+      background-color: #0a5a5a;
+    }
+    .active-nav-link {
+      background-color: #e6f4f1;
+      color: #0d6e6e;
+    }
+  </style>
+<link rel="stylesheet" href="/static/css/mobile.css">
+</head>
+<body class="bg-slate-50 min-h-screen font-sans text-slate-700">
+<header class="bg-white border-b border-slate-200 sticky top-0 z-50" data-purpose="navigation-header">
+<div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<a href="/">
+<img alt="UniEv Logo" class="h-30 w-30 object-contain" src="/static/images/Logo.png" onerror="this.style.display='none'"/>
+</a>
+</div>
+<nav class="flex items-center space-x-6 text-sm font-medium text-slate-500" data-purpose="main-nav" id="mainNav">
+<!-- Navigation will be dynamically populated -->
+</nav>
+</div>
+</header>
+
+<!-- Verification Banner (shown only if not verified) -->
+<div id="verificationBanner" class="hidden bg-gradient-to-r from-amber-50 to-orange-50 border-b-2 border-amber-200">
+    <div class="max-w-6xl mx-auto px-4 py-4">
+        <div class="flex items-center justify-between flex-wrap gap-4">
+            <div class="flex items-center gap-3">
+                <div class="flex-shrink-0">
+                    <svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <p class="font-semibold text-amber-900">E-posta Adresiniz Doğrulanmadı</p>
+                    <p class="text-sm text-amber-700">Mesaj gönderme ve eşleşme gibi özellikleri kullanmak için e-postanızı doğrulayın.</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <button onclick="resendVerificationEmail()" class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-semibold transition-all text-sm">
+                    Doğrulama E-postası Gönder
+                </button>
+                <button onclick="dismissVerificationBanner()" class="text-amber-600 hover:text-amber-800 p-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<main class="max-w-3xl mx-auto py-10 px-4" data-purpose="profile-settings-form">
+<section class="bg-white rounded-2xl shadow-sm border border-slate-100 p-8 mb-6" data-purpose="profile-photo">
+<div class="flex flex-col items-center mb-6">
+<div class="relative">
+<img id="profilePhoto" alt="Profile Photo" class="w-32 h-32 rounded-full object-cover border-4 border-slate-100" src="/static/images/default-avatar.svg" onerror="this.src='/static/images/default-avatar.svg'"/>
+<button onclick="selectProfilePhoto()" class="absolute bottom-0 right-0 bg-teal-600 hover:bg-teal-700 text-white rounded-full p-2 shadow-lg transition-all">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+</svg>
+</button>
+</div>
+<p class="text-sm text-slate-500 mt-3">Profil fotoğrafınızı değiştirmek için tıklayın</p>
+<div id="photoUploadProgress" class="hidden mt-2 text-sm text-blue-600">
+<div class="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 inline-block mr-2"></div>
+Yükleniyor...
+</div>
+</div>
+</section>
+
+<section class="bg-white rounded-2xl shadow-sm border border-slate-100 p-8 mb-6" data-purpose="user-info">
+<h2 class="text-lg font-semibold text-slate-800 mb-4">Kişisel Bilgiler</h2>
+<div class="space-y-4">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="space-y-2">
+<label class="block text-sm font-semibold text-slate-600" for="first_name">Ad</label>
+<input class="w-full rounded-lg border-slate-200 focus:border-uniev-teal focus:ring-uniev-teal" type="text" id="first_name" placeholder="Adınız"/>
+</div>
+<div class="space-y-2">
+<label class="block text-sm font-semibold text-slate-600" for="last_name">Soyad</label>
+<input class="w-full rounded-lg border-slate-200 focus:border-uniev-teal focus:ring-uniev-teal" type="text" id="last_name" placeholder="Soyadınız"/>
+</div>
+</div>
+
+<div class="space-y-2">
+<label class="block text-sm font-semibold text-slate-600" for="name_display_format">İsim Görünüm Formatı</label>
+<select class="w-full rounded-lg border-slate-200 text-slate-500 focus:border-uniev-teal focus:ring-uniev-teal transition-colors" id="name_display_format">
+<option value="FULL">Tam İsim (Örn: Kusai Aksoyyy)</option>
+<option value="ABBREVIATED">Kısaltılmış (Örn: Kusai A.)</option>
+<option value="INITIALS">Baş Harfler (Örn: K. A.)</option>
+</select>
+<p class="text-xs text-slate-500">İsminizin diğer kullanıcılara nasıl görüneceğini seçin</p>
+</div>
+
+<div class="space-y-2">
+<label class="block text-sm font-semibold text-slate-600" for="current_email">E-posta Adresi</label>
+<input class="w-full rounded-lg border-slate-200 bg-slate-50 text-slate-600" type="email" id="current_email" readonly/>
+<p class="text-xs text-slate-500">Mevcut e-posta adresiniz</p>
+</div>
+
+<div class="space-y-2">
+<label class="block text-sm font-semibold text-slate-600" for="new_email">Yeni E-posta Adresi</label>
+<input class="w-full rounded-lg border-slate-200 focus:border-uniev-teal focus:ring-uniev-teal" type="email" id="new_email" placeholder="Değiştirmek için yeni e-posta girin"/>
+<p class="text-xs text-slate-500">E-posta değiştirirseniz yeniden doğrulama gerekir</p>
+</div>
+
+<div class="space-y-2">
+<label class="block text-sm font-semibold text-slate-600" for="phone">Telefon Numarası</label>
+<input class="w-full rounded-lg border-slate-200 focus:border-uniev-teal focus:ring-uniev-teal" type="tel" id="phone" placeholder="+90 5XX XXX XX XX"/>
+<p class="text-xs text-slate-500">İlan sahipleri sizinle iletişime geçebilir</p>
+</div>
+
+<button type="button" onclick="savePersonalInfo()" class="w-full py-3 px-4 rounded-xl text-white font-semibold bg-uniev-teal shadow-md transition-all active:scale-[0.98]">
+Kişisel Bilgileri Kaydet
+</button>
+</div>
+</section>
+
+<section class="bg-white rounded-2xl shadow-sm border border-slate-100 p-8 mb-6" data-purpose="user-preferences">
+<h2 class="text-lg font-semibold text-slate-800 mb-4">Tercihler ve Biyografi</h2>
+<p class="text-sm text-slate-600 mb-4">⚠️ Eşleşme özelliğini kullanmak için aşağıdaki tüm alanları doldurmanız gerekiyor.</p>
+<form class="space-y-6" id="profileForm">
+<div class="space-y-2">
+<label class="block text-sm font-semibold text-slate-600" for="sleep_schedule">Uyku Düzeni <span class="text-red-500">*</span></label>
+<select class="w-full rounded-lg border-slate-200 text-slate-500 focus:border-uniev-teal focus:ring-uniev-teal transition-colors" id="sleep_schedule">
+<option value="">Seçin...</option>
+<option value="EARLY_BIRD">Erken kalkan</option>
+<option value="NIGHT_OWL">Gece kuşu</option>
+<option value="FLEXIBLE">Değişken</option>
+</select>
+</div>
+<div class="space-y-2">
+<label class="block text-sm font-semibold text-slate-600" for="cleanliness">Temizlik Hassasiyeti <span class="text-red-500">*</span></label>
+<select class="w-full rounded-lg border-slate-200 text-slate-500 focus:border-uniev-teal focus:ring-uniev-teal transition-colors" id="cleanliness">
+<option value="">Seçin...</option>
+<option value="LOW">Düşük</option>
+<option value="MEDIUM">Orta</option>
+<option value="HIGH">Yüksek</option>
+</select>
+</div>
+<div class="flex flex-wrap gap-6 pt-2">
+<label class="inline-flex items-center text-sm text-slate-600 cursor-pointer">
+<input class="rounded border-slate-300 text-uniev-teal focus:ring-uniev-teal mr-2" type="checkbox" id="smoking_ok"/>
+<span>🚬 Sigara içilmesine izin ver <span class="text-red-500">*</span></span>
+</label>
+<label class="inline-flex items-center text-sm text-slate-600 cursor-pointer">
+<input class="rounded border-slate-300 text-uniev-teal focus:ring-uniev-teal mr-2" type="checkbox" id="pet_ok"/>
+<span>🐾 Evcil hayvan tamam <span class="text-red-500">*</span></span>
+</label>
+</div>
+<p class="text-xs text-slate-500 -mt-2">* Kutucukları işaretleyin veya boş bırakın (null olmamalı)</p>
+<div class="grid grid-cols-2 gap-4">
+<div class="space-y-2">
+<label class="block text-sm font-semibold text-slate-600" for="budget_min">Min Bütçe (₺) <span class="text-red-500">*</span></label>
+<input class="w-full rounded-lg border-slate-200 focus:border-uniev-teal focus:ring-uniev-teal" type="number" id="budget_min" placeholder="5000"/>
+</div>
+<div class="space-y-2">
+<label class="block text-sm font-semibold text-slate-600" for="budget_max">Max Bütçe (₺) <span class="text-red-500">*</span></label>
+<input class="w-full rounded-lg border-slate-200 focus:border-uniev-teal focus:ring-uniev-teal" type="number" id="budget_max" placeholder="10000"/>
+</div>
+</div>
+<div class="space-y-2">
+<label class="block text-sm font-semibold text-slate-600" for="bio">Biyografi</label>
+<textarea class="w-full rounded-lg border-slate-200 focus:border-uniev-teal focus:ring-uniev-teal" id="bio" rows="4" placeholder="Kendinizden bahsedin..."></textarea>
+</div>
+<div class="pt-4">
+<button class="w-full py-3 px-4 rounded-xl text-white font-semibold bg-uniev-teal shadow-md transition-all active:scale-[0.98]" type="submit">
+Tercihler Kaydet
+</button>
+</div>
+</form>
+</section>
+
+<!-- Ratings Section -->
+<section class="bg-white rounded-2xl shadow-sm border border-slate-100 p-8 mb-6" data-purpose="user-ratings" id="ratingsSection">
+<h2 class="text-lg font-semibold text-slate-800 mb-4">Değerlendirmelerim</h2>
+<div id="ratingsContent">
+<div class="text-center py-4">
+<div class="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-700 mx-auto"></div>
+</div>
+</div>
+</section>
+
+<!-- Listings Section (for landlords only) -->
+<section class="bg-white rounded-2xl shadow-sm border border-slate-100 p-8 mb-6 hidden" data-purpose="user-listings" id="listingsSection">
+<h2 class="text-lg font-semibold text-slate-800 mb-4">İlanlarım</h2>
+<div id="listingsContent">
+<div class="text-center py-4">
+<div class="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-700 mx-auto"></div>
+</div>
+</div>
+</section>
+
+<!-- Danger Zone -->
+<section class="bg-white rounded-2xl shadow-sm border border-red-100 p-8 mb-6" data-purpose="danger-zone">
+<h2 class="text-lg font-semibold text-red-600 mb-4">⚠️ Tehlikeli Bölge</h2>
+<p class="text-sm text-slate-600 mb-4">Hesabınızı silmek geri alınamaz bir işlemdir. Tüm verileriniz kalıcı olarak silinecektir.</p>
+<button onclick="showDeleteAccountModal()" class="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition-all">
+Hesabı Sil
+</button>
+</section>
+</section>
+</main>
+<footer class="mt-auto py-12 px-4 border-t border-slate-200" data-purpose="site-footer">
+<div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-slate-400">
+<div data-purpose="copyright-info">
+        © 2026 UniEv - Öğrenciler için güvenli konut platformu
+      </div>
+<nav class="flex flex-wrap justify-center gap-4" data-purpose="footer-nav">
+<a class="hover:text-slate-600 transition-colors" href="#">KVKK</a>
+<a class="hover:text-slate-600 transition-colors" href="#">Gizlilik</a>
+<a class="hover:text-slate-600 transition-colors" href="#">Çerez Politikası</a>
+<a class="hover:text-slate-600 transition-colors" href="#">Kullanım Koşulları</a>
+<a class="hover:text-slate-600 transition-colors" href="#">Yardım</a>
+</nav>
+</div>
+</footer>
+<script>
+// Check authentication on page load
+const token = localStorage.getItem('token');
+if (!token) {
+    window.location.href = '/login';
+}
+
+const userStr = localStorage.getItem('user');
+const user = userStr ? JSON.parse(userStr) : null;
+
+// Dynamic navigation based on role
+function setupNavigation() {
+    const nav = document.getElementById('mainNav');
+    
+    if (!user) {
+        nav.innerHTML = `
+            <a class="hover:text-slate-900" href="/">Ana Sayfa</a>
+            <a class="hover:text-slate-900" href="/listings">İlanlar</a>
+            <a class="hover:text-slate-900" href="/help">Yardım</a>
+            <a class="hover:text-slate-900" href="/login">Giriş</a>
+            <a class="hover:text-slate-900" href="/register">Kayıt Ol</a>
+        `;
+        return;
+    }
+    
+    if (user.role === 'LANDLORD') {
+        nav.innerHTML = `
+            <a class="hover:text-slate-900" href="/">Ana Sayfa</a>
+            <a class="hover:text-slate-900" href="/listings">İlanlar</a>
+            <a class="hover:text-slate-900" href="/create-listing">İlan Oluştur</a>
+            <a class="hover:text-slate-900" href="/messages">Mesajlar</a>
+            <a class="px-4 py-1.5 rounded-full active-nav-link" href="/profile">Profil</a>
+            <a class="hover:text-slate-900" href="/help">Yardım</a>
+            <a class="hover:text-slate-900" href="#" onclick="logout()">Çıkış</a>
+        `;
+    } else if (user.role === 'ADMIN') {
+        nav.innerHTML = `
+            <a class="hover:text-slate-900" href="/">Ana Sayfa</a>
+            <a class="hover:text-slate-900" href="/listings">İlanlar</a>
+            <a class="hover:text-slate-900" href="/admin">Admin Panel</a>
+            <a class="hover:text-slate-900" href="/messages">Mesajlar</a>
+            <a class="px-4 py-1.5 rounded-full active-nav-link" href="/profile">Profil</a>
+            <a class="hover:text-slate-900" href="/help">Yardım</a>
+            <a class="hover:text-slate-900" href="#" onclick="logout()">Çıkış</a>
+        `;
+    } else {
+        // STUDENT
+        nav.innerHTML = `
+            <a class="hover:text-slate-900" href="/">Ana Sayfa</a>
+            <a class="hover:text-slate-900" href="/listings">İlanlar</a>
+            <a class="hover:text-slate-900" href="/match">Eşleşme</a>
+            <a class="hover:text-slate-900" href="/messages">Mesajlar</a>
+            <a class="px-4 py-1.5 rounded-full active-nav-link" href="/profile">Profil</a>
+            <a class="hover:text-slate-900" href="/help">Yardım</a>
+            <a class="hover:text-slate-900" href="#" onclick="logout()">Çıkış</a>
+        `;
+    }
+}
+
+setupNavigation();
+
+function logout() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.href = '/login';
+}
+
+async function loadProfile() {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        window.location.href = '/login';
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/users/profile', {
+            headers: {'Authorization': `Bearer ${token}`}
+        });
+        
+        if (response.status === 401) {
+            // Token expired or invalid
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/login';
+            return;
+        }
+        
+        if (response.status === 403) {
+            // User not verified - still allow profile editing
+            console.log('User not verified, but can still edit profile');
+        }
+        
+        if (response.ok) {
+            const profile = await response.json();
+            document.getElementById('sleep_schedule').value = profile.sleep_schedule || '';
+            document.getElementById('cleanliness').value = profile.cleanliness || '';
+            document.getElementById('smoking_ok').checked = profile.smoking_ok || false;
+            document.getElementById('pet_ok').checked = profile.pet_ok || false;
+            document.getElementById('budget_min').value = profile.budget_min || '';
+            document.getElementById('budget_max').value = profile.budget_max || '';
+            document.getElementById('bio').value = profile.bio || '';
+            document.getElementById('name_display_format').value = profile.name_display_format || 'FULL';
+            
+            // Load profile photo
+            if (profile.photo_url) {
+                document.getElementById('profilePhoto').src = profile.photo_url;
+            }
+            
+            // Highlight missing required fields with red border
+            highlightMissingFields(profile);
+        }
+        
+        // Load user info (phone, email, name)
+        const userResponse = await fetch('/api/auth/me', {
+            headers: {'Authorization': `Bearer ${token}`}
+        });
+        
+        if (userResponse.ok) {
+            const userData = await userResponse.json();
+            
+            // Show verification banner if not verified
+            showVerificationBannerIfNeeded(userData);
+            
+            document.getElementById('phone').value = userData.phone || '';
+            document.getElementById('current_email').value = userData.email || '';
+            document.getElementById('first_name').value = userData.first_name || '';
+            document.getElementById('last_name').value = userData.last_name || '';
+        }
+        
+        // Load ratings
+        loadRatings();
+        
+        // Load listings if landlord
+        if (user && user.role === 'LANDLORD') {
+            document.getElementById('listingsSection').classList.remove('hidden');
+            loadListings();
+        }
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
+function highlightMissingFields(profile) {
+    // Check required fields for matching
+    const requiredFields = [
+        { id: 'budget_min', value: profile.budget_min },
+        { id: 'budget_max', value: profile.budget_max },
+        { id: 'smoking_ok', value: profile.smoking_ok, type: 'boolean' },
+        { id: 'pet_ok', value: profile.pet_ok, type: 'boolean' },
+        { id: 'sleep_schedule', value: profile.sleep_schedule },
+        { id: 'cleanliness', value: profile.cleanliness }
+    ];
+    
+    requiredFields.forEach(field => {
+        const element = document.getElementById(field.id);
+        if (element) {
+            // For boolean fields, check if null/undefined
+            if (field.type === 'boolean') {
+                if (field.value === null || field.value === undefined) {
+                    element.parentElement.parentElement.classList.add('ring-2', 'ring-red-500', 'rounded-lg', 'p-2', 'bg-red-50');
+                }
+            } else {
+                // For other fields, check if empty
+                if (!field.value || field.value === '') {
+                    element.classList.add('border-red-500', 'border-2');
+                }
+            }
+        }
+    });
+}
+
+async function savePersonalInfo() {
+    const token = localStorage.getItem('token');
+    
+    try {
+        // Update name
+        const firstName = document.getElementById('first_name').value.trim();
+        const lastName = document.getElementById('last_name').value.trim();
+        
+        if (firstName && lastName) {
+            const nameResponse = await fetch('/api/auth/update-name', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    first_name: firstName,
+                    last_name: lastName
+                })
+            });
+            
+            if (!nameResponse.ok) {
+                const error = await nameResponse.json();
+                throw new Error(error.detail || 'İsim güncellenemedi');
+            }
+        }
+        
+        // Update email if changed
+        const newEmail = document.getElementById('new_email').value.trim();
+        if (newEmail) {
+            const emailResponse = await fetch('/api/auth/update-email', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ email: newEmail })
+            });
+            
+            if (!emailResponse.ok) {
+                const error = await emailResponse.json();
+                throw new Error(error.detail || 'E-posta güncellenemedi');
+            }
+            
+            // Clear new email field
+            document.getElementById('new_email').value = '';
+            document.getElementById('current_email').value = newEmail;
+        }
+        
+        // Update phone
+        const phone = document.getElementById('phone').value.trim();
+        const phoneResponse = await fetch('/api/auth/update-phone', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ phone: phone })
+        });
+        
+        if (!phoneResponse.ok) {
+            const error = await phoneResponse.json();
+            throw new Error(error.detail || 'Telefon güncellenemedi');
+        }
+        
+        // Update name display format in profile
+        const nameDisplayFormat = document.getElementById('name_display_format').value;
+        await fetch('/api/users/profile', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ name_display_format: nameDisplayFormat })
+        });
+        
+        showToast('Kişisel bilgiler güncellendi!', 'success');
+        
+        // Update local storage user info
+        const userResponse = await fetch('/api/auth/me', {
+            headers: {'Authorization': `Bearer ${token}`}
+        });
+        if (userResponse.ok) {
+            const userData = await userResponse.json();
+            localStorage.setItem('user', JSON.stringify(userData));
+        }
+        
+    } catch (error) {
+        showToast(error.message, 'error');
+    }
+}
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function renderStars(rating, size = 'text-xl') {
+    let stars = '';
+    for (let i = 1; i <= 5; i++) {
+        if (i <= rating) {
+            stars += `<span class="${size} text-yellow-400">★</span>`;
+        } else {
+            stars += `<span class="${size} text-gray-300">★</span>`;
+        }
+    }
+    return stars;
+}
+
+async function loadRatings() {
+    const token = localStorage.getItem('token');
+    const container = document.getElementById('ratingsContent');
+    
+    try {
+        const response = await fetch(`/api/ratings/user/${user.id}`, {
+            headers: {'Authorization': `Bearer ${token}`}
+        });
+        
+        if (!response.ok) {
+            throw new Error('Değerlendirmeler yüklenemedi');
+        }
+        
+        const data = await response.json();
+        const ratings = data.ratings || [];
+        const avgRating = data.average_rating || 0;
+        const totalRatings = data.total_ratings || 0;
+        
+        if (ratings.length === 0) {
+            container.innerHTML = `
+                <div class="text-center py-8">
+                    <div class="text-4xl mb-2">⭐</div>
+                    <p class="text-slate-500">Henüz değerlendirme almadınız</p>
+                </div>
+            `;
+            return;
+        }
+        
+        container.innerHTML = `
+            <div class="flex items-center gap-3 mb-6 pb-4 border-b border-slate-200">
+                <div class="flex">${renderStars(Math.round(avgRating))}</div>
+                <span class="text-2xl font-bold text-slate-900">${avgRating.toFixed(1)}</span>
+                <span class="text-sm text-slate-500">(${totalRatings} değerlendirme)</span>
+            </div>
+            <div class="space-y-4">
+                ${ratings.map(rating => `
+                    <div class="bg-slate-50 rounded-lg p-4">
+                        <div class="flex items-start gap-3">
+                            <img src="${rating.rater_photo || '/static/images/default-avatar.svg'}" 
+                                 class="w-10 h-10 rounded-full object-cover"
+                                 onerror="this.src='/static/images/default-avatar.svg'" />
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="font-semibold text-slate-900">${escapeHtml(rating.rater_name)}</span>
+                                    <div class="flex">${renderStars(rating.rating, 'text-sm')}</div>
+                                </div>
+                                ${rating.comment ? `<p class="text-sm text-slate-700">${escapeHtml(rating.comment)}</p>` : ''}
+                                <p class="text-xs text-slate-500 mt-1">${new Date(rating.created_at).toLocaleDateString('tr-TR')}</p>
+                            </div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+        
+    } catch (error) {
+        console.error('Error loading ratings:', error);
+        container.innerHTML = `
+            <div class="text-center py-4 text-red-500">
+                <p class="text-sm">${error.message}</p>
+            </div>
+        `;
+    }
+}
+
+async function loadListings() {
+    const token = localStorage.getItem('token');
+    const container = document.getElementById('listingsContent');
+    
+    try {
+        const response = await fetch(`/api/listings?owner_id=${user.id}`, {
+            headers: {'Authorization': `Bearer ${token}`}
+        });
+        
+        if (!response.ok) {
+            throw new Error('İlanlar yüklenemedi');
+        }
+        
+        const data = await response.json();
+        const listings = data.listings || [];
+        
+        if (listings.length === 0) {
+            container.innerHTML = `
+                <div class="text-center py-8">
+                    <div class="text-4xl mb-2">🏠</div>
+                    <p class="text-slate-500 mb-4">Henüz ilan oluşturmadınız</p>
+                    <a href="/create-listing" class="inline-block bg-teal-600 hover:bg-teal-700 text-white px-6 py-2 rounded-lg font-semibold transition-all">
+                        İlan Oluştur
+                    </a>
+                </div>
+            `;
+            return;
+        }
+        
+        container.innerHTML = `
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                ${listings.map(listing => `
+                    <div class="bg-white border border-slate-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="font-semibold text-slate-900 flex-1">${escapeHtml(listing.title)}</h3>
+                            <button onclick="editListing('${listing.id}')" class="text-blue-600 hover:text-blue-700 ml-2" title="İlanı Düzenle">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        <p class="text-sm text-slate-600 mb-3 line-clamp-2">${escapeHtml(listing.description)}</p>
+                        <div class="text-xs text-slate-500 mb-2">
+                            <div class="flex items-center gap-1 mb-1">
+                                <span>📍</span>
+                                <span>${escapeHtml(listing.city || '')}, ${escapeHtml(listing.district || '')}</span>
+                            </div>
+                            ${listing.address ? `
+                            <div class="flex items-center gap-1 mb-1">
+                                <span>🏠</span>
+                                <span class="line-clamp-1">${escapeHtml(listing.address)}</span>
+                            </div>
+                            ` : ''}
+                        </div>
+                        <div class="flex justify-between items-center mb-3 pt-2 border-t border-slate-100">
+                            <span class="text-lg font-bold text-teal-700">₺${listing.price.toLocaleString('tr-TR')}/ay</span>
+                            <span class="text-xs px-2 py-1 rounded ${
+                                listing.status === 'ACTIVE' ? 'bg-green-100 text-green-700' :
+                                listing.status === 'SUSPENDED' ? 'bg-red-100 text-red-700' :
+                                'bg-slate-100 text-slate-700'
+                            }">
+                                ${listing.status === 'ACTIVE' ? 'Aktif' : listing.status}
+                            </span>
+                        </div>
+                        <a href="/listing/${listing.id}" class="block w-full text-center bg-teal-600 hover:bg-teal-700 text-white py-2 rounded-lg font-semibold transition-all">
+                            İlana Git
+                        </a>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+        
+    } catch (error) {
+        console.error('Error loading listings:', error);
+        container.innerHTML = `
+            <div class="text-center py-4 text-red-500">
+                <p class="text-sm">${error.message}</p>
+            </div>
+        `;
+    }
+}
+
+function editListing(listingId) {
+    // Redirect to edit page (we'll create this)
+    window.location.href = `/edit-listing/${listingId}`;
+}
+
+function showDeleteAccountModal() {
+    const modal = document.createElement('div');
+    modal.id = 'deleteAccountModal';
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+    modal.innerHTML = `
+        <div class="bg-white rounded-xl p-6 max-w-md w-full">
+            <h3 class="text-xl font-bold text-red-600 mb-4">⚠️ Hesabı Sil</h3>
+            <p class="text-slate-700 mb-4">Bu işlem geri alınamaz! Hesabınız ve tüm verileriniz kalıcı olarak silinecektir:</p>
+            <ul class="list-disc list-inside text-sm text-slate-600 mb-6 space-y-1">
+                <li>Profil bilgileriniz</li>
+                <li>Tüm ilanlarınız</li>
+                <li>Mesajlarınız</li>
+                <li>Değerlendirmeleriniz</li>
+            </ul>
+            <p class="text-sm font-semibold text-slate-900 mb-4">Devam etmek istediğinizden emin misiniz?</p>
+            <div class="flex gap-3">
+                <button onclick="closeDeleteAccountModal()" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 py-2 rounded-lg font-semibold transition-all">
+                    İptal
+                </button>
+                <button onclick="confirmDeleteAccount()" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg font-semibold transition-all">
+                    Evet, Sil
+                </button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+function closeDeleteAccountModal() {
+    const modal = document.getElementById('deleteAccountModal');
+    if (modal) modal.remove();
+}
+
+async function confirmDeleteAccount() {
+    const token = localStorage.getItem('token');
+    
+    try {
+        const response = await fetch('/api/auth/account', {
+            method: 'DELETE',
+            headers: {'Authorization': `Bearer ${token}`}
+        });
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || 'Hesap silinemedi');
+        }
+        
+        // Clear local storage
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        
+        // Show success message and redirect
+        showToast('Hesabınız başarıyla silindi', 'success');
+        setTimeout(() => window.location.href = '/', 2000);
+        
+    } catch (error) {
+        showToast(error.message, 'error');
+        closeDeleteAccountModal();
+    }
+}
+
+document.getElementById('profileForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const token = localStorage.getItem('token');
+    
+    const formData = {
+        sleep_schedule: document.getElementById('sleep_schedule').value,
+        cleanliness: document.getElementById('cleanliness').value,
+        smoking_ok: document.getElementById('smoking_ok').checked,
+        pet_ok: document.getElementById('pet_ok').checked,
+        budget_min: parseInt(document.getElementById('budget_min').value) || null,
+        budget_max: parseInt(document.getElementById('budget_max').value) || null,
+        bio: document.getElementById('bio').value,
+        name_display_format: document.getElementById('name_display_format').value
+    };
+    
+    try {
+        const response = await fetch('/api/users/profile', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(formData)
+        });
+        
+        if (response.status === 401) {
+            // Token expired or invalid
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/login';
+            return;
+        }
+        
+        if (response.ok) {
+            showToast('Tercihler güncellendi!', 'success');
+        } else {
+            const error = await response.json();
+            showToast(error.detail || 'Tercihler güncellenemedi', 'error');
+        }
+    } catch (error) {
+        showToast('Bir hata oluştu', 'error');
+    }
+});
+
+// Profile photo upload
+function selectProfilePhoto() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = async (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            await uploadProfilePhoto(file);
+        }
+    };
+    input.click();
+}
+
+async function uploadProfilePhoto(file) {
+    const token = localStorage.getItem('token');
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    // Show progress
+    document.getElementById('photoUploadProgress').classList.remove('hidden');
+    
+    try {
+        const response = await fetch('/api/users/profile/photo', {
+            method: 'POST',
+            headers: {'Authorization': `Bearer ${token}`},
+            body: formData
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            document.getElementById('profilePhoto').src = data.url;
+            showToast('Profil fotoğrafı güncellendi!', 'success');
+        } else {
+            const error = await response.json();
+            showToast(error.detail || 'Fotoğraf yüklenemedi', 'error');
+        }
+    } catch (error) {
+        showToast('Bir hata oluştu', 'error');
+    } finally {
+        document.getElementById('photoUploadProgress').classList.add('hidden');
+    }
+}
+
+// Verification banner functions
+async function resendVerificationEmail() {
+    const token = localStorage.getItem('token');
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    
+    if (!user.email) {
+        showToast('E-posta adresi bulunamadı', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/auth/resend-verification', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email: user.email })
+        });
+        
+        if (response.ok) {
+            showToast('✅ Doğrulama e-postası gönderildi! Lütfen gelen kutunuzu kontrol edin.', 'success', 5000);
+        } else {
+            const error = await response.json();
+            showToast(error.detail || 'E-posta gönderilemedi', 'error');
+        }
+    } catch (error) {
+        showToast('Bağlantı hatası', 'error');
+    }
+}
+
+function dismissVerificationBanner() {
+    document.getElementById('verificationBanner').classList.add('hidden');
+    // Store dismissal in localStorage so it doesn't show again this session
+    sessionStorage.setItem('verificationBannerDismissed', 'true');
+}
+
+function showVerificationBannerIfNeeded(userData) {
+    // Don't show if already dismissed this session
+    if (sessionStorage.getItem('verificationBannerDismissed') === 'true') {
+        return;
+    }
+    
+    // Show banner if user is not verified
+    if (userData && !userData.is_verified) {
+        document.getElementById('verificationBanner').classList.remove('hidden');
+    }
+}
+
+loadProfile();
+</script>
+<script src="/static/js/mobile-menu.js"></script>
+</body></html>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile Debug</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 p-8">
+    <div class="max-w-2xl mx-auto bg-white rounded-xl shadow-lg p-8">
+        <h1 class="text-2xl font-bold mb-6">Profile Debug Information</h1>
+        <div id="profileInfo" class="space-y-4"></div>
+        <button onclick="fixProfile()" class="mt-6 bg-teal-600 text-white px-6 py-3 rounded-lg hover:bg-teal-700">
+            Fix Profile (Set Missing Fields to False/Default)
+        </button>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('token');
+        
+        async function loadProfile() {
+            try {
+                const response = await fetch('/api/users/profile', {
+                    headers: {'Authorization': `Bearer ${token}`}
+                });
+                
+                if (response.ok) {
+                    const profile = await response.json();
+                    const container = document.getElementById('profileInfo');
+                    
+                    const fields = [
+                        { name: 'budget_min', label: 'Budget Min', required: true },
+                        { name: 'budget_max', label: 'Budget Max', required: true },
+                        { name: 'smoking_ok', label: 'Smoking OK', required: true, type: 'boolean' },
+                        { name: 'pet_ok', label: 'Pet OK', required: true, type: 'boolean' },
+                        { name: 'sleep_schedule', label: 'Sleep Schedule', required: true },
+                        { name: 'cleanliness', label: 'Cleanliness', required: true }
+                    ];
+                    
+                    let html = '<div class="space-y-3">';
+                    fields.forEach(field => {
+                        const value = profile[field.name];
+                        const isEmpty = value === null || value === undefined || value === '';
+                        const status = isEmpty ? '❌ MISSING' : '✅ SET';
+                        const color = isEmpty ? 'text-red-600' : 'text-green-600';
+                        
+                        html += `
+                            <div class="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
+                                <div>
+                                    <span class="font-semibold">${field.label}:</span>
+                                    <span class="ml-2 text-slate-600">${value === null ? 'null' : value === undefined ? 'undefined' : value === '' ? '(empty string)' : value}</span>
+                                </div>
+                                <span class="${color} font-bold">${status}</span>
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                    
+                    // Summary
+                    const missingCount = fields.filter(f => {
+                        const value = profile[f.name];
+                        return value === null || value === undefined || value === '';
+                    }).length;
+                    
+                    html += `
+                        <div class="mt-6 p-4 ${missingCount > 0 ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200'} border rounded-lg">
+                            <p class="font-bold text-lg">${missingCount > 0 ? '⚠️ Profile Incomplete' : '✅ Profile Complete'}</p>
+                            <p class="text-sm mt-1">${missingCount} field(s) missing</p>
+                        </div>
+                    `;
+                    
+                    container.innerHTML = html;
+                } else {
+                    document.getElementById('profileInfo').innerHTML = '<p class="text-red-600">Error loading profile</p>';
+                }
+            } catch (error) {
+                document.getElementById('profileInfo').innerHTML = '<p class="text-red-600">Error: ' + error.message + '</p>';
+            }
+        }
+        
+        async function fixProfile() {
+            try {
+                const response = await fetch('/api/users/profile', {
+                    headers: {'Authorization': `Bearer ${token}`}
+                });
+                
+                if (response.ok) {
+                    const profile = await response.json();
+                    
+                    // Set defaults for missing fields
+                    const updates = {
+                        smoking_ok: profile.smoking_ok !== null && profile.smoking_ok !== undefined ? profile.smoking_ok : false,
+                        pet_ok: profile.pet_ok !== null && profile.pet_ok !== undefined ? profile.pet_ok : false,
+                        sleep_schedule: profile.sleep_schedule || 'FLEXIBLE',
+                        cleanliness: profile.cleanliness || 'MEDIUM',
+                        budget_min: profile.budget_min || 5000,
+                        budget_max: profile.budget_max || 10000,
+                        bio: profile.bio || '',
+                        name_display_format: profile.name_display_format || 'FULL'
+                    };
+                    
+                    const updateResponse = await fetch('/api/users/profile', {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(updates)
+                    });
+                    
+                    if (updateResponse.ok) {
+                        alert('Profile fixed! Reloading...');
+                        loadProfile();
+                    } else {
+                        alert('Error fixing profile');
+                    }
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+        
+        loadProfile();
+    </script>
+</body>
+</html>

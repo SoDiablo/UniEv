@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="tr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>UniEv - Güvenli Konut ve Ev Arkadaşı</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style data-purpose="custom-fonts">
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+  </style>
+<style data-purpose="hero-gradient">
+    .hero-gradient {
+      background: linear-gradient(135deg, #0f766e 0%, #134e4a 100%);
+    }
+    .hero-radial {
+      background: radial-gradient(circle at center, #14b8a6 0%, #0f766e 60%, #134e4a 100%);
+    }
+  </style>
+<link rel="stylesheet" href="/static/css/mobile.css">
+</head>
+<body class="bg-white text-slate-800">
+<!-- BEGIN: Navigation -->
+<nav class="w-full bg-white border-b border-gray-100 sticky top-0 z-50" data-purpose="main-navigation">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="flex justify-between h-16 items-center">
+<div class="flex items-center gap-2" data-purpose="logo">
+<div class="flex items-center space-x-2">
+<a href="/">
+<img alt="UniEv Logo" class="h-30 w-30 object-contain" src="/static/images/Logo.png" onerror="this.style.display='none'"/>
+</a>
+</div>
+</div>
+<div class="hidden md:flex items-center space-x-8" id="navbar">
+<!-- Navigation will be populated by JavaScript -->
+</div>
+</div>
+</div>
+</nav>
+<!-- BEGIN: HeroSection -->
+<section class="hero-radial py-24 md:py-32 flex flex-col items-center justify-center text-center px-4" data-purpose="hero-banner">
+<div class="max-w-4xl mx-auto">
+<h1 class="text-3xl md:text-5xl font-bold text-white mb-6 leading-tight">
+        Güvenli Konut Bul,<br/>
+        Ev Arkadaşı Eşleş
+      </h1>
+<p class="text-teal-50 text-sm md:text-lg mb-10 max-w-2xl mx-auto leading-relaxed">
+        Öğrenciler için dolandırıcılık risk analizi, güvenlik haritası ve ev arkadaşı eşleştirme — tek platformda.
+      </p>
+<a class="inline-flex items-center bg-white text-teal-800 px-8 py-3 rounded-xl font-semibold text-lg shadow-xl hover:bg-gray-100 transition-all gap-2" href="/listings">
+<svg class="h-5 w-5" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+        İlanları Keşfet →
+      </a>
+</div>
+</section>
+<!-- BEGIN: FeaturesSection -->
+<section class="py-20 bg-slate-50" data-purpose="features-overview">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="text-center mb-16">
+<h2 class="text-3xl font-bold text-slate-900 mb-4">Neden UniEv?</h2>
+<p class="text-gray-500 max-w-2xl mx-auto">
+          Bilinçli karar vermeniz için güvenlik ve uyumluluk odaklı araçlar sunuyoruz.
+        </p>
+</div>
+<div class="grid md:grid-cols-3 gap-8">
+<div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow group" data-purpose="feature-card">
+<div class="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center mb-6">
+<div class="w-6 h-6 bg-blue-400 rounded-full flex items-center justify-center shadow-inner">
+<div class="w-2 h-2 bg-white rounded-full"></div>
+</div>
+</div>
+<h3 class="text-xl font-bold text-slate-900 mb-3">FraudScore</h3>
+<p class="text-gray-500 text-sm leading-relaxed">
+            Her ilan otomatik dolandırıcılık risk analizinden geçer. Bilinçli karar ver.
+          </p>
+</div>
+<div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow group" data-purpose="feature-card">
+<div class="w-12 h-12 bg-pink-50 rounded-2xl flex items-center justify-center mb-6">
+<div class="w-3 h-3 bg-pink-500 rounded-full ring-4 ring-pink-100"></div>
+</div>
+<h3 class="text-xl font-bold text-slate-900 mb-3">SafetyMap</h3>
+<p class="text-gray-500 text-sm leading-relaxed">
+            Mahalle güvenlik seviyelerini harita üzerinde gör. SafetyIndex ile değerlendir.
+          </p>
+</div>
+<div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow group" data-purpose="feature-card">
+<div class="w-12 h-12 bg-purple-50 rounded-2xl flex items-center justify-center mb-6">
+<div class="flex gap-1">
+<div class="w-3 h-3 bg-purple-900 rounded-sm"></div>
+<div class="w-3 h-3 bg-purple-900 rounded-sm"></div>
+</div>
+</div>
+<h3 class="text-xl font-bold text-slate-900 mb-3">MatchEngine</h3>
+<p class="text-gray-500 text-sm leading-relaxed">
+            Profil tercihlerine göre uyumlu ev arkadaşı önerileri al.
+          </p>
+</div>
+</div>
+</div>
+</section>
+<!-- BEGIN: Footer -->
+<footer class="bg-white border-t border-gray-100 py-8" data-purpose="site-footer">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="flex flex-col md:flex-row justify-between items-center gap-6">
+<div class="text-gray-400 text-sm">
+          © 2026 UniEv - Öğrenciler için güvenli konut platformu
+        </div>
+<div class="flex flex-wrap justify-center gap-6 text-sm text-gray-500 font-medium">
+<a class="hover:text-teal-600 transition-colors" href="#">KVKK</a>
+<a class="hover:text-teal-600 transition-colors" href="#">Gizlilik</a>
+<a class="hover:text-teal-600 transition-colors" href="#">Çerez Politikası</a>
+<a class="hover:text-teal-600 transition-colors" href="#">Kullanım Koşulları</a>
+<a class="hover:text-teal-600 transition-colors" href="#">Yardım</a>
+</div>
+</div>
+</div>
+</footer>
+<script>
+// Check if user is logged in and show appropriate navigation
+const token = localStorage.getItem('token');
+const userStr = localStorage.getItem('user');
+const user = userStr ? JSON.parse(userStr) : null;
+const navbar = document.getElementById('navbar');
+
+const activeClass = 'text-teal-700 border-b-2 border-teal-700 pb-1 font-medium transition-colors';
+const normalClass = 'text-gray-600 hover:text-teal-600 font-medium transition-colors';
+
+if (!user) {
+    // GUEST navigation
+    navbar.innerHTML = `
+        <a class="${activeClass}" href="/">Ana Sayfa</a>
+        <a class="${normalClass}" href="/listings">İlanlar</a>
+        <a class="${normalClass}" href="/help">Yardım</a>
+        <a class="${normalClass}" href="/login">Giriş</a>
+        <a href="/register" class="bg-teal-700 text-white px-5 py-2 rounded-lg font-medium hover:bg-teal-800 transition-all">
+            Kayıt Ol
+        </a>
+    `;
+} else if (user.role === 'LANDLORD') {
+    // LANDLORD navigation
+    navbar.innerHTML = `
+        <a class="${activeClass}" href="/">Ana Sayfa</a>
+        <a class="${normalClass}" href="/listings">İlanlar</a>
+        <a class="${normalClass}" href="/create-listing">İlan Oluştur</a>
+        <a class="${normalClass}" href="/messages">Mesajlar</a>
+        <a class="${normalClass}" href="/profile">Profil</a>
+        <a class="${normalClass}" href="/help">Yardım</a>
+        <a class="${normalClass} cursor-pointer" onclick="logout()">Çıkış</a>
+    `;
+} else if (user.role === 'ADMIN') {
+    // ADMIN navigation
+    navbar.innerHTML = `
+        <a class="${activeClass}" href="/">Ana Sayfa</a>
+        <a class="${normalClass}" href="/listings">İlanlar</a>
+        <a class="${normalClass}" href="/admin">Admin Panel</a>
+        <a class="${normalClass}" href="/messages">Mesajlar</a>
+        <a class="${normalClass}" href="/profile">Profil</a>
+        <a class="${normalClass}" href="/help">Yardım</a>
+        <a class="${normalClass} cursor-pointer" onclick="logout()">Çıkış</a>
+    `;
+} else {
+    // STUDENT navigation
+    navbar.innerHTML = `
+        <a class="${activeClass}" href="/">Ana Sayfa</a>
+        <a class="${normalClass}" href="/listings">İlanlar</a>
+        <a class="${normalClass}" href="/match">Eşleşme</a>
+        <a class="${normalClass}" href="/messages">Mesajlar</a>
+        <a class="${normalClass}" href="/profile">Profil</a>
+        <a class="${normalClass}" href="/help">Yardım</a>
+        <a class="${normalClass} cursor-pointer" onclick="logout()">Çıkış</a>
+    `;
+}
+
+function logout() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.href = '/login';
+}
+</script>
+<script src="/static/js/mobile-menu.js"></script>
+</body></html>

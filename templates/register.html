@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>UniEv - Kayıt Ol</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style data-purpose="typography">
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f8fafc;
+    }
+  </style>
+<style data-purpose="custom-colors">
+    .text-uniev-teal { color: #117a73; }
+    .bg-uniev-teal { background-color: #117a73; }
+    .border-uniev-teal { border-color: #117a73; }
+    .bg-uniev-light { background-color: #f0f7f6; }
+    .navbar-gradient {
+      background: linear-gradient(90deg, #0f766e 0%, #14b8a6 50%, #0f766e 100%);
+      height: 3px;
+    }
+    /* Force radio button selection to work */
+    input[type="radio"]:checked + div {
+      border-color: #117a73 !important;
+      background-color: #f0f7f6 !important;
+    }
+    /* Custom notification */
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: linear-gradient(135deg, #0f766e 0%, #14b8a6 100%);
+      color: white;
+      padding: 16px 24px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 9999;
+      animation: slideIn 0.3s ease-out;
+      max-width: 400px;
+    }
+    @keyframes slideIn {
+      from {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+    .notification.hide {
+      animation: slideOut 0.3s ease-out forwards;
+    }
+    @keyframes slideOut {
+      to {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+    }
+  </style>
+<link rel="stylesheet" href="/static/css/mobile.css">
+</head>
+<body class="min-h-screen flex flex-col">
+<!-- BEGIN: Top Small Navigation -->
+<nav class="bg-white border-b border-gray-100 py-2 px-4 md:px-20 flex flex-col md:flex-row justify-between items-center text-[11px] text-gray-500" data-purpose="utility-nav">
+<div>
+      © 2026 UniEv - Öğrenciler için güvenli konut platformu
+    </div>
+<div class="flex space-x-4 mt-2 md:mt-0">
+<a class="hover:text-gray-800" href="#">KVKK</a>
+<a class="hover:text-gray-800" href="#">Gizlilik</a>
+<a class="hover:text-gray-800" href="#">Çerez Politikası</a>
+<a class="hover:text-gray-800" href="#">Kullanım Koşulları</a>
+<a class="hover:text-gray-800" href="/help">Yardım</a>
+</div>
+</nav>
+<!-- END: Top Small Navigation -->
+
+<!-- BEGIN: Main Header -->
+<header class="bg-white sticky top-0 z-50 shadow-sm" data-purpose="main-header">
+<div class="py-4 px-4 md:px-20 flex justify-between items-center">
+<div class="flex items-center space-x-2">
+<a href="/">
+<img alt="UniEv Logo" class="h-30 w-30 object-contain" src="/static/images/Logo.png" onerror="this.style.display='none'"/>
+</a>
+</div>
+<div class="flex items-center space-x-6 text-sm font-medium text-gray-600">
+<a class="hover:text-uniev-teal transition-colors" href="/">Ana Sayfa</a>
+<a class="hover:text-uniev-teal transition-colors" href="/listings">İlanlar</a>
+<a class="hover:text-uniev-teal transition-colors" href="/help">Yardım</a>
+<a class="hover:text-uniev-teal transition-colors" href="/login">Giriş</a>
+<a class="bg-uniev-teal text-white px-5 py-2 rounded-lg hover:bg-opacity-90 transition-all" href="/register">Kayıt Ol</a>
+</div>
+</div>
+<!-- Gradient Line -->
+<div class="navbar-gradient"></div>
+</header>
+<!-- END: Main Header -->
+
+<!-- BEGIN: Registration Container -->
+<main class="flex-grow flex flex-col items-center py-12 px-4" data-purpose="registration-form-section">
+<!-- Title Section -->
+<div class="text-center mb-10">
+<h1 class="text-3xl font-bold text-slate-800 mb-2">Kayıt Ol</h1>
+<p class="text-gray-500">Ücretsiz hesap oluşturun</p>
+</div>
+
+<!-- Form Box -->
+<div class="bg-white w-full max-w-2xl rounded-2xl shadow-sm border border-gray-100 p-8 md:p-12" data-purpose="registration-card">
+<form action="/api/auth/register" class="space-y-6" method="POST" id="registerForm">
+<!-- Account Type Selection -->
+<div class="space-y-3">
+<label class="text-sm font-semibold text-gray-700">Hesap Türü <span class="text-red-500">*</span></label>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="accountTypeContainer">
+<!-- Student Option -->
+<div class="relative cursor-pointer" data-value="STUDENT">
+<input checked="" class="absolute opacity-0" name="account_type" type="radio" value="STUDENT" id="radio_student"/>
+<div class="p-6 border-2 border-gray-100 rounded-xl flex flex-col items-center text-center transition-all hover:border-gray-200">
+<div class="mb-2 text-2xl">🎓</div>
+<div class="font-bold text-slate-800">Öğrenci</div>
+<div class="text-xs text-gray-500 mt-1">Ev araştırın, eşleşin</div>
+</div>
+</div>
+<!-- Landlord Option -->
+<div class="relative cursor-pointer" data-value="LANDLORD">
+<input class="absolute opacity-0" name="account_type" type="radio" value="LANDLORD" id="radio_landlord"/>
+<div class="p-6 border-2 border-gray-100 rounded-xl flex flex-col items-center text-center transition-all hover:border-gray-200">
+<div class="mb-2 text-2xl">🏠</div>
+<div class="font-bold text-slate-800">Ev Sahibi</div>
+<div class="text-xs text-gray-500 mt-1">Konut ilanı yayınlayın</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Name and Surname Row -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="space-y-1">
+<label class="text-sm font-semibold text-gray-700" for="first_name">Ad</label>
+<input class="w-full border-gray-200 rounded-lg p-3 text-sm focus:ring-uniev-teal focus:border-uniev-teal" id="first_name" name="first_name" placeholder="Adınız" type="text" required/>
+</div>
+<div class="space-y-1">
+<label class="text-sm font-semibold text-gray-700" for="last_name">Soyad</label>
+<input class="w-full border-gray-200 rounded-lg p-3 text-sm focus:ring-uniev-teal focus:border-uniev-teal" id="last_name" name="last_name" placeholder="Soyadınız" type="text" required/>
+</div>
+</div>
+
+<!-- Email Field -->
+<div class="space-y-1">
+<label class="text-sm font-semibold text-gray-700" for="email">E-posta</label>
+<input class="w-full border-gray-200 rounded-lg p-3 text-sm focus:ring-uniev-teal focus:border-uniev-teal" id="email" name="email" placeholder="ornek@universite.edu.tr" type="email" required/>
+</div>
+
+<!-- Password Field -->
+<div class="space-y-1">
+<label class="text-sm font-semibold text-gray-700" for="password">Şifre</label>
+<input class="w-full border-gray-200 rounded-lg p-3 text-sm focus:ring-uniev-teal focus:border-uniev-teal" id="password" name="password" placeholder="••••••••" type="password" required/>
+<!-- Password Requirements -->
+<div class="grid grid-cols-2 gap-x-4 gap-y-1 pt-2">
+<div class="flex items-center space-x-2 text-[10px] text-gray-400">
+<input class="h-3 w-3 rounded-full border-gray-300" disabled="" type="checkbox" id="check1"/>
+<span>En az 8 karakter</span>
+</div>
+<div class="flex items-center space-x-2 text-[10px] text-gray-400">
+<input class="h-3 w-3 rounded-full border-gray-300" disabled="" type="checkbox" id="check2"/>
+<span>Büyük harf</span>
+</div>
+<div class="flex items-center space-x-2 text-[10px] text-gray-400">
+<input class="h-3 w-3 rounded-full border-gray-300" disabled="" type="checkbox" id="check3"/>
+<span>Küçük harf</span>
+</div>
+<div class="flex items-center space-x-2 text-[10px] text-gray-400">
+<input class="h-3 w-3 rounded-full border-gray-300" disabled="" type="checkbox" id="check4"/>
+<span>Rakam</span>
+</div>
+</div>
+</div>
+
+<!-- Birthday and Phone Row -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="space-y-1">
+<label class="text-sm font-semibold text-gray-700" for="dob">Doğum Tarihi</label>
+<input class="w-full border-gray-200 rounded-lg p-3 text-sm focus:ring-uniev-teal focus:border-uniev-teal" id="dob" name="dob" type="date" required/>
+</div>
+<div class="space-y-1">
+<label class="text-sm font-semibold text-gray-700" for="phone">Telefon <span class="text-gray-400 font-normal">(opsiyonel)</span></label>
+<input class="w-full border-gray-200 rounded-lg p-3 text-sm focus:ring-uniev-teal focus:border-uniev-teal" id="phone" name="phone" placeholder="+90 5xx xxx xx xx" type="tel"/>
+</div>
+</div>
+
+<!-- Agreement Checkboxes -->
+<div class="space-y-3 pt-2">
+<label class="flex items-start space-x-3 cursor-pointer">
+<input class="mt-1 h-4 w-4 text-uniev-teal border-gray-300 rounded focus:ring-uniev-teal" type="checkbox" id="accept_terms" required/>
+<span class="text-xs text-gray-600">
+<a href="#" class="text-uniev-teal underline hover:text-teal-800" onclick="openModal('termsModal'); return false;">Kullanım Koşulları</a>'nı okudum ve kabul ediyorum. <span class="text-red-500">*</span>
+</span>
+</label>
+<label class="flex items-start space-x-3 cursor-pointer">
+<input class="mt-1 h-4 w-4 text-uniev-teal border-gray-300 rounded focus:ring-uniev-teal" type="checkbox" id="accept_kvkk" required/>
+<span class="text-xs text-gray-600">
+<a href="#" class="text-uniev-teal underline hover:text-teal-800" onclick="openModal('kvkkModal'); return false;">KVKK Aydınlatma Metni</a>'ni okudum, kabul ediyorum. <span class="text-red-500">*</span>
+</span>
+</label>
+<label class="flex items-start space-x-3 cursor-pointer">
+<input class="mt-1 h-4 w-4 text-uniev-teal border-gray-300 rounded focus:ring-uniev-teal" type="checkbox" id="accept_cookies" required/>
+<span class="text-xs text-gray-600">
+<a href="#" class="text-uniev-teal underline hover:text-teal-800" onclick="openModal('cookiesModal'); return false;">Çerez Politikası</a>'nı kabul ediyorum. <span class="text-red-500">*</span>
+</span>
+</label>
+<label class="flex items-start space-x-3 cursor-pointer">
+<input class="mt-1 h-4 w-4 text-uniev-teal border-gray-300 rounded focus:ring-uniev-teal" type="checkbox" id="accept_marketing"/>
+<span class="text-xs text-gray-600">Pazarlama e-postalarını almak istiyorum <span class="text-gray-400">(opsiyonel)</span></span>
+</label>
+</div>
+
+<!-- Submit Button -->
+<div class="pt-4">
+<button class="w-full bg-uniev-teal text-white font-bold py-4 rounded-xl hover:bg-opacity-95 transition-all shadow-md" type="submit">
+            Kayıt Ol
+          </button>
+</div>
+
+<!-- Login Link -->
+<div class="text-center text-sm text-gray-500 pt-2">
+          Zaten hesabınız var mı? <a class="text-uniev-teal font-bold hover:underline" href="/login">Giriş Yap</a>
+</div>
+</form>
+</div>
+</main>
+<!-- END: Registration Container -->
+
+<!-- BEGIN: Footer -->
+<footer class="bg-gradient-to-r from-teal-800 to-teal-700 py-10 px-4 md:px-20" data-purpose="main-footer">
+<div class="flex flex-col md:flex-row justify-between items-center text-[12px] text-white">
+<div>
+        © 2026 UniEv - Öğrenciler için güvenli konut platformu
+      </div>
+<div class="flex space-x-6 mt-4 md:mt-0">
+<a class="hover:text-teal-200" href="#">KVKK</a>
+<a class="hover:text-teal-200" href="#">Gizlilik</a>
+<a class="hover:text-teal-200" href="#">Çerez Politikası</a>
+<a class="hover:text-teal-200" href="#">Kullanım Koşulları</a>
+<a class="hover:text-teal-200" href="/help">Yardım</a>
+</div>
+</div>
+</footer>
+<!-- END: Footer -->
+
+<!-- MODALS -->
+<!-- KVKK Modal -->
+<div id="kvkkModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50" onclick="if(event.target === this) closeModal('kvkkModal')">
+<div class="bg-white rounded-2xl max-w-3xl w-full mx-4 max-h-[90vh] overflow-hidden shadow-2xl">
+<div class="bg-gradient-to-r from-teal-700 to-teal-600 p-6 flex justify-between items-center">
+<h2 class="text-2xl font-bold text-white">KVKK Aydınlatma Metni</h2>
+<button onclick="closeModal('kvkkModal')" class="text-white hover:text-gray-200 text-3xl leading-none">&times;</button>
+</div>
+<div class="p-6 overflow-y-auto max-h-[60vh]">
+<div class="prose prose-sm max-w-none">
+<h3 class="text-lg font-bold mb-3">Kişisel Verilerin Korunması Hakkında Aydınlatma Metni</h3>
+<p class="mb-4">6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") uyarınca, kişisel verilerinizin UniEv tarafından işlenmesine ilişkin olarak aşağıda bilgilendirme yapılmaktadır.</p>
+
+<h4 class="font-bold mt-4 mb-2">1. Veri Sorumlusu</h4>
+<p class="mb-3">Kişisel verileriniz, veri sorumlusu sıfatıyla UniEv tarafından aşağıda açıklanan kapsamda işlenebilecektir.</p>
+
+<h4 class="font-bold mt-4 mb-2">2. İşlenen Kişisel Veriler</h4>
+<ul class="list-disc pl-5 mb-3 space-y-1">
+<li>Kimlik Bilgileri: Ad, soyad, doğum tarihi</li>
+<li>İletişim Bilgileri: E-posta adresi, telefon numarası</li>
+<li>Konum Bilgileri: Adres, şehir, ilçe</li>
+<li>İşlem Güvenliği Bilgileri: IP adresi, çerez kayıtları</li>
+<li>Müşteri İşlem Bilgileri: İlan geçmişi, mesajlaşma kayıtları</li>
+</ul>
+
+<h4 class="font-bold mt-4 mb-2">3. Kişisel Verilerin İşlenme Amacı</h4>
+<ul class="list-disc pl-5 mb-3 space-y-1">
+<li>Üyelik işlemlerinin gerçekleştirilmesi</li>
+<li>Platform hizmetlerinin sunulması</li>
+<li>Güvenlik ve dolandırıcılık önleme</li>
+<li>İletişim faaliyetlerinin yürütülmesi</li>
+<li>Yasal yükümlülüklerin yerine getirilmesi</li>
+</ul>
+
+<h4 class="font-bold mt-4 mb-2">4. Kişisel Verilerin Aktarılması</h4>
+<p class="mb-3">Kişisel verileriniz, yukarıda belirtilen amaçların gerçekleştirilmesi doğrultusunda iş ortaklarımıza, tedarikçilerimize ve yasal yükümlülüklerimiz çerçevesinde kamu kurum ve kuruluşlarına aktarılabilecektir.</p>
+
+<h4 class="font-bold mt-4 mb-2">5. Kişisel Veri Toplamanın Yöntemi ve Hukuki Sebebi</h4>
+<p class="mb-3">Kişisel verileriniz, elektronik ortamda, KVKK'nın 5. ve 6. maddelerinde belirtilen kişisel veri işleme şartları ve amaçları kapsamında işlenmektedir.</p>
+
+<h4 class="font-bold mt-4 mb-2">6. Kişisel Veri Sahibinin Hakları</h4>
+<p class="mb-3">KVKK'nın 11. maddesi uyarınca, kişisel veri sahipleri:</p>
+<ul class="list-disc pl-5 mb-3 space-y-1">
+<li>Kişisel verilerinin işlenip işlenmediğini öğrenme</li>
+<li>İşlenmişse buna ilişkin bilgi talep etme</li>
+<li>İşlenme amacını ve bunların amacına uygun kullanılıp kullanılmadığını öğrenme</li>
+<li>Yurt içinde veya yurt dışında aktarıldığı üçüncü kişileri bilme</li>
+<li>Eksik veya yanlış işlenmiş olması hâlinde bunların düzeltilmesini isteme</li>
+<li>KVKK'nın 7. maddesinde öngörülen şartlar çerçevesinde silinmesini veya yok edilmesini isteme</li>
+<li>Düzeltme, silme ve yok edilme işlemlerinin aktarıldığı üçüncü kişilere bildirilmesini isteme</li>
+<li>Münhasıran otomatik sistemler vasıtasıyla analiz edilmesi suretiyle aleyhinize bir sonucun ortaya çıkmasına itiraz etme</li>
+<li>Kanuna aykırı olarak işlenmesi sebebiyle zarara uğraması hâlinde zararın giderilmesini talep etme haklarına sahiptir.</li>
+</ul>
+
+<p class="text-sm text-gray-600 mt-4">Bu haklarınızı kullanmak için info@uniev.com adresine başvurabilirsiniz.</p>
+</div>
+</div>
+<div class="p-6 bg-gray-50 flex justify-end gap-3">
+<button onclick="closeModal('kvkkModal')" class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors">
+Kapat
+</button>
+<button onclick="acceptKVKK()" class="px-6 py-2 bg-gradient-to-r from-teal-700 to-teal-600 text-white rounded-lg hover:from-teal-800 hover:to-teal-700 transition-all font-semibold">
+Okudum ve Anladım
+</button>
+</div>
+</div>
+</div>
+
+<!-- Terms Modal -->
+<div id="termsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50" onclick="if(event.target === this) closeModal('termsModal')">
+<div class="bg-white rounded-2xl max-w-3xl w-full mx-4 max-h-[90vh] overflow-hidden shadow-2xl">
+<div class="bg-gradient-to-r from-teal-700 to-teal-600 p-6 flex justify-between items-center">
+<h2 class="text-2xl font-bold text-white">Kullanım Koşulları</h2>
+<button onclick="closeModal('termsModal')" class="text-white hover:text-gray-200 text-3xl leading-none">&times;</button>
+</div>
+<div class="p-6 overflow-y-auto max-h-[60vh]">
+<div class="prose prose-sm max-w-none">
+<h3 class="text-lg font-bold mb-3">UniEv Kullanım Koşulları</h3>
+<p class="mb-4">Bu kullanım koşulları, UniEv platformunu kullanımınızı düzenler. Platformu kullanarak bu koşulları kabul etmiş sayılırsınız.</p>
+
+<h4 class="font-bold mt-4 mb-2">1. Hizmet Tanımı</h4>
+<p class="mb-3">UniEv, üniversite öğrencileri ve ev sahipleri arasında güvenli konut kiralama sürecini kolaylaştıran bir platformdur.</p>
+
+<h4 class="font-bold mt-4 mb-2">2. Kullanıcı Yükümlülükleri</h4>
+<ul class="list-disc pl-5 mb-3 space-y-1">
+<li>Kayıt sırasında doğru ve güncel bilgiler sağlamak</li>
+<li>Hesap güvenliğini korumak ve şifrenizi kimseyle paylaşmamak</li>
+<li>Platform kurallarına uymak</li>
+<li>Yanıltıcı veya sahte ilan yayınlamamak</li>
+<li>Diğer kullanıcılara saygılı davranmak</li>
+<li>Yasalara aykırı içerik paylaşmamak</li>
+</ul>
+
+<h4 class="font-bold mt-4 mb-2">3. İlan Yayınlama</h4>
+<p class="mb-3">Ev sahipleri:</p>
+<ul class="list-disc pl-5 mb-3 space-y-1">
+<li>Sadece kendi mülklerine ait ilanlar yayınlayabilir</li>
+<li>Gerçek fotoğraflar ve doğru bilgiler kullanmalıdır</li>
+<li>Fiyat ve koşulları net bir şekilde belirtmelidir</li>
+<li>İlan içeriğinden sorumludur</li>
+</ul>
+
+<h4 class="font-bold mt-4 mb-2">4. Güvenlik ve Dolandırıcılık Önleme</h4>
+<p class="mb-3">UniEv, FraudScore sistemi ile ilanları otomatik olarak değerlendirir. Şüpheli ilanlar askıya alınabilir veya kaldırılabilir.</p>
+
+<h4 class="font-bold mt-4 mb-2">5. Sorumluluk Reddi</h4>
+<p class="mb-3">UniEv:</p>
+<ul class="list-disc pl-5 mb-3 space-y-1">
+<li>Kullanıcılar arasındaki anlaşmaların tarafı değildir</li>
+<li>İlan içeriklerinin doğruluğunu garanti etmez</li>
+<li>Kullanıcılar arası uyuşmazlıklardan sorumlu değildir</li>
+<li>Platform üzerinden yapılan işlemlerden kaynaklanan zararlardan sorumlu tutulamaz</li>
+</ul>
+
+<h4 class="font-bold mt-4 mb-2">6. Hesap Askıya Alma ve Sonlandırma</h4>
+<p class="mb-3">UniEv, kullanım koşullarını ihlal eden hesapları uyarı vermeksizin askıya alabilir veya sonlandırabilir.</p>
+
+<h4 class="font-bold mt-4 mb-2">7. Fikri Mülkiyet</h4>
+<p class="mb-3">Platform içeriği, tasarımı ve logosu UniEv'e aittir. İzinsiz kullanılamaz, kopyalanamaz veya dağıtılamaz.</p>
+
+<h4 class="font-bold mt-4 mb-2">8. Değişiklikler</h4>
+<p class="mb-3">UniEv, bu kullanım koşullarını önceden haber vermeksizin değiştirme hakkını saklı tutar.</p>
+
+<h4 class="font-bold mt-4 mb-2">9. İletişim</h4>
+<p class="mb-3">Sorularınız için: info@uniev.com</p>
+</div>
+</div>
+<div class="p-6 bg-gray-50 flex justify-end gap-3">
+<button onclick="closeModal('termsModal')" class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors">
+Kapat
+</button>
+<button onclick="acceptTerms()" class="px-6 py-2 bg-gradient-to-r from-teal-700 to-teal-600 text-white rounded-lg hover:from-teal-800 hover:to-teal-700 transition-all font-semibold">
+Okudum ve Anladım
+</button>
+</div>
+</div>
+</div>
+
+<!-- Cookies Modal -->
+<div id="cookiesModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50" onclick="if(event.target === this) closeModal('cookiesModal')">
+<div class="bg-white rounded-2xl max-w-3xl w-full mx-4 max-h-[90vh] overflow-hidden shadow-2xl">
+<div class="bg-gradient-to-r from-teal-700 to-teal-600 p-6 flex justify-between items-center">
+<h2 class="text-2xl font-bold text-white">Çerez Politikası</h2>
+<button onclick="closeModal('cookiesModal')" class="text-white hover:text-gray-200 text-3xl leading-none">&times;</button>
+</div>
+<div class="p-6 overflow-y-auto max-h-[60vh]">
+<div class="prose prose-sm max-w-none">
+<h3 class="text-lg font-bold mb-3">UniEv Çerez Politikası</h3>
+<p class="mb-4">Bu çerez politikası, UniEv platformunun çerez kullanımını açıklar.</p>
+
+<h4 class="font-bold mt-4 mb-2">1. Çerez Nedir?</h4>
+<p class="mb-3">Çerezler, web sitelerini ziyaret ettiğinizde cihazınıza kaydedilen küçük metin dosyalarıdır. Çerezler, web sitesinin düzgün çalışmasını sağlar ve kullanıcı deneyimini iyileştirir.</p>
+
+<h4 class="font-bold mt-4 mb-2">2. Kullandığımız Çerez Türleri</h4>
+
+<h5 class="font-semibold mt-3 mb-2">a) Zorunlu Çerezler</h5>
+<p class="mb-2">Platformun çalışması için gereklidir:</p>
+<ul class="list-disc pl-5 mb-3 space-y-1">
+<li>Oturum çerezleri (session cookies)</li>
+<li>Kimlik doğrulama çerezleri</li>
+<li>Güvenlik çerezleri</li>
+</ul>
+
+<h5 class="font-semibold mt-3 mb-2">b) Performans Çerezleri</h5>
+<p class="mb-2">Platform performansını ölçer:</p>
+<ul class="list-disc pl-5 mb-3 space-y-1">
+<li>Sayfa yükleme süreleri</li>
+<li>Hata raporlama</li>
+<li>Kullanım istatistikleri</li>
+</ul>
+
+<h5 class="font-semibold mt-3 mb-2">c) İşlevsellik Çerezleri</h5>
+<p class="mb-2">Tercihlerinizi hatırlar:</p>
+<ul class="list-disc pl-5 mb-3 space-y-1">
+<li>Dil tercihi</li>
+<li>Konum bilgisi</li>
+<li>Arama filtreleri</li>
+</ul>
+
+<h5 class="font-semibold mt-3 mb-2">d) Hedefleme/Reklam Çerezleri</h5>
+<p class="mb-3">Size özel içerik gösterir (opsiyonel).</p>
+
+<h4 class="font-bold mt-4 mb-2">3. Çerez Yönetimi</h4>
+<p class="mb-3">Tarayıcı ayarlarınızdan çerezleri yönetebilir, silebilir veya engelleyebilirsiniz. Ancak, zorunlu çerezleri engellerseniz platform düzgün çalışmayabilir.</p>
+
+<h4 class="font-bold mt-4 mb-2">4. Üçüncü Taraf Çerezleri</h4>
+<p class="mb-3">Platform, analiz ve reklam hizmetleri için üçüncü taraf çerezleri kullanabilir:</p>
+<ul class="list-disc pl-5 mb-3 space-y-1">
+<li>Google Analytics</li>
+<li>Google Maps</li>
+</ul>
+
+<h4 class="font-bold mt-4 mb-2">5. Çerez Saklama Süresi</h4>
+<ul class="list-disc pl-5 mb-3 space-y-1">
+<li>Oturum çerezleri: Tarayıcı kapatılana kadar</li>
+<li>Kalıcı çerezler: 1 yıla kadar</li>
+</ul>
+
+<h4 class="font-bold mt-4 mb-2">6. İletişim</h4>
+<p class="mb-3">Çerez politikası hakkında sorularınız için: info@uniev.com</p>
+</div>
+</div>
+<div class="p-6 bg-gray-50 flex justify-end gap-3">
+<button onclick="closeModal('cookiesModal')" class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors">
+Kapat
+</button>
+<button onclick="acceptCookies()" class="px-6 py-2 bg-gradient-to-r from-teal-700 to-teal-600 text-white rounded-lg hover:from-teal-800 hover:to-teal-700 transition-all font-semibold">
+Okudum ve Anladım
+</button>
+</div>
+</div>
+</div>
+
+<script>
+// Modal functions
+function openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        document.body.style.overflow = 'hidden'; // Prevent background scroll
+    }
+}
+
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        document.body.style.overflow = ''; // Restore scroll
+    }
+}
+
+// Accept functions - auto-check checkboxes
+function acceptKVKK() {
+    document.getElementById('accept_kvkk').checked = true;
+    closeModal('kvkkModal');
+    showNotification('✅ KVKK aydınlatma metni kabul edildi', 'success');
+}
+
+function acceptTerms() {
+    document.getElementById('accept_terms').checked = true;
+    closeModal('termsModal');
+    showNotification('✅ Kullanım koşulları kabul edildi', 'success');
+}
+
+function acceptCookies() {
+    document.getElementById('accept_cookies').checked = true;
+    closeModal('cookiesModal');
+    showNotification('✅ Çerez politikası kabul edildi', 'success');
+}
+
+// Close modal on Escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeModal('kvkkModal');
+        closeModal('termsModal');
+        closeModal('cookiesModal');
+    }
+});
+
+// Custom notification function
+function showNotification(message, type = 'success') {
+    const notification = document.createElement('div');
+    notification.className = 'notification';
+    notification.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="font-size: 24px;">${type === 'success' ? '✓' : '⚠'}</div>
+            <div style="flex: 1;">${message}</div>
+        </div>
+    `;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.classList.add('hide');
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+
+// FIXED: Radio button selection that ACTUALLY WORKS
+document.querySelectorAll('#accountTypeContainer > div[data-value]').forEach(card => {
+    card.addEventListener('click', function() {
+        const value = this.getAttribute('data-value');
+        const radio = this.querySelector('input[type="radio"]');
+        
+        // Uncheck all radios and remove styling
+        document.querySelectorAll('#accountTypeContainer input[type="radio"]').forEach(r => {
+            r.checked = false;
+            r.parentElement.querySelector('div').style.borderColor = '';
+            r.parentElement.querySelector('div').style.backgroundColor = '';
+        });
+        
+        // Check this radio and apply styling
+        radio.checked = true;
+        this.querySelector('div').style.borderColor = '#117a73';
+        this.querySelector('div').style.backgroundColor = '#f0f7f6';
+    });
+});
+
+// Set initial state for checked radio
+document.addEventListener('DOMContentLoaded', function() {
+    const checkedRadio = document.querySelector('input[name="account_type"]:checked');
+    if (checkedRadio) {
+        checkedRadio.parentElement.querySelector('div').style.borderColor = '#117a73';
+        checkedRadio.parentElement.querySelector('div').style.backgroundColor = '#f0f7f6';
+    }
+});
+
+// Password validation indicators
+document.getElementById('password').addEventListener('input', (e) => {
+    const pw = e.target.value;
+    document.getElementById('check1').checked = pw.length >= 8;
+    document.getElementById('check2').checked = /[A-Z]/.test(pw);
+    document.getElementById('check3').checked = /[a-z]/.test(pw);
+    document.getElementById('check4').checked = /\d/.test(pw);
+});
+
+// Form submission
+document.getElementById('registerForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    // Clear all previous errors
+    document.querySelectorAll('.error-message').forEach(el => el.remove());
+    document.querySelectorAll('.border-red-500').forEach(el => {
+        el.classList.remove('border-red-500', 'border-2', 'bg-red-50');
+        el.classList.add('border-gray-200');
+    });
+    // Clear checkbox highlights
+    document.querySelectorAll('.bg-red-50').forEach(el => {
+        el.classList.remove('bg-red-50', 'border', 'border-red-300', 'rounded', 'p-2');
+    });
+    
+    const formData = {
+        email: document.getElementById('email').value.trim(),
+        password: document.getElementById('password').value,
+        first_name: document.getElementById('first_name').value.trim(),
+        last_name: document.getElementById('last_name').value.trim(),
+        birth_date: document.getElementById('dob').value,
+        phone: document.getElementById('phone').value.trim() || null,
+        role: document.querySelector('input[name="account_type"]:checked').value,
+        accept_terms: document.getElementById('accept_terms').checked,
+        accept_kvkk: document.getElementById('accept_kvkk').checked
+    };
+    
+    console.log('📤 Sending registration data:', formData);
+    
+    try {
+        const response = await fetch('/api/auth/register', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(formData)
+        });
+        
+        const data = await response.json();
+        console.log('📥 Response:', data);
+        
+        if (response.ok) {
+            showNotification('✅ Kayıt başarılı! E-posta doğrulama bağlantısı gönderildi.', 'success');
+            
+            // Show success message and instructions - NO AUTO REDIRECT
+            // User can browse listings without verification
+            setTimeout(() => {
+                // Redirect to listings page where they can browse without verification
+                window.location.href = '/listings';
+            }, 2000);
+        } else {
+            // Handle specific error cases
+            const errorMessage = data.detail || 'Kayıt başarısız';
+            console.error('❌ Registration error:', errorMessage);
+            
+            // Show general error notification
+            showNotification('❌ ' + errorMessage, 'error');
+            
+            // Highlight specific fields based on error message
+            highlightErrorField(errorMessage);
+        }
+    } catch (error) {
+        console.error('❌ Network error:', error);
+        showNotification('❌ Bağlantı hatası. Lütfen tekrar deneyin.', 'error');
+    }
+});
+
+// Function to highlight specific field with error
+function highlightErrorField(errorMessage) {
+    const errorLower = errorMessage.toLowerCase();
+    let fieldId = null;
+    let customMessage = errorMessage;
+    
+    console.log('🔍 Highlighting error for:', errorMessage);
+    
+    // Map error messages to fields
+    if (errorLower.includes('e-posta') || errorLower.includes('email') || errorLower.includes('e-mail')) {
+        fieldId = 'email';
+        if (errorLower.includes('geçerli') || errorLower.includes('valid')) {
+            customMessage = '❌ Geçerli bir e-posta adresi giriniz (örn: isim@universite.edu.tr)';
+        } else if (errorLower.includes('kayıtlı') || errorLower.includes('zaten') || errorLower.includes('already')) {
+            customMessage = '❌ Bu e-posta adresi zaten kayıtlı. Giriş yapmayı deneyin.';
+        } else if (errorLower.includes('gerekli') || errorLower.includes('required')) {
+            customMessage = '❌ E-posta adresi gereklidir';
+        }
+    } else if (errorLower.includes('şifre') || errorLower.includes('password') || errorLower.includes('sifre')) {
+        fieldId = 'password';
+        if (errorLower.includes('8') || errorLower.includes('karakter') || errorLower.includes('character')) {
+            customMessage = '❌ Şifre en az 8 karakter olmalıdır';
+        } else if (errorLower.includes('rakam') || errorLower.includes('digit') || errorLower.includes('sayı')) {
+            customMessage = '❌ Şifre en az bir rakam içermelidir';
+        } else if (errorLower.includes('gerekli') || errorLower.includes('required')) {
+            customMessage = '❌ Şifre gereklidir';
+        }
+    } else if (errorLower.includes('yaş') || errorLower.includes('18') || errorLower.includes('yas') || errorLower.includes('age')) {
+        fieldId = 'dob';
+        customMessage = '❌ Kayıt için 18 yaşından büyük olmanız gereklidir';
+    } else if (errorLower.includes('doğum') || errorLower.includes('tarih') || errorLower.includes('dogum') || errorLower.includes('birth')) {
+        fieldId = 'dob';
+        if (errorLower.includes('gerekli') || errorLower.includes('required')) {
+            customMessage = '❌ Doğum tarihi gereklidir';
+        } else {
+            customMessage = '❌ Geçerli bir doğum tarihi giriniz';
+        }
+    } else if ((errorLower.includes('ad') || errorLower.includes('first') || errorLower.includes('name')) && !errorLower.includes('soyad') && !errorLower.includes('last')) {
+        fieldId = 'first_name';
+        customMessage = '❌ Ad gereklidir';
+    } else if (errorLower.includes('soyad') || errorLower.includes('last name') || errorLower.includes('surname')) {
+        fieldId = 'last_name';
+        customMessage = '❌ Soyad gereklidir';
+    } else if (errorLower.includes('telefon') || errorLower.includes('phone')) {
+        fieldId = 'phone';
+        if (errorLower.includes('kayıtlı') || errorLower.includes('zaten') || errorLower.includes('already')) {
+            customMessage = '❌ Bu telefon numarası zaten kayıtlı';
+        } else {
+            customMessage = '❌ Geçersiz telefon numarası';
+        }
+    } else if (errorLower.includes('kvkk')) {
+        // Highlight KVKK checkbox
+        const kvkkCheckbox = document.getElementById('accept_kvkk');
+        const kvkkLabel = kvkkCheckbox.parentElement;
+        kvkkLabel.classList.add('bg-red-50', 'rounded', 'p-2', 'border', 'border-red-300');
+        
+        // Add error message
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error-message text-red-600 text-xs mt-1 font-semibold flex items-center gap-1';
+        errorDiv.innerHTML = `<span>⚠️</span><span>❌ KVKK aydınlatma metnini kabul etmelisiniz</span>`;
+        kvkkLabel.appendChild(errorDiv);
+        
+        // Scroll to checkbox
+        kvkkLabel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        
+        // Shake animation
+        kvkkLabel.style.animation = 'shake 0.5s';
+        setTimeout(() => kvkkLabel.style.animation = '', 500);
+        
+        return; // Don't process as regular field
+    } else if (errorLower.includes('kullanım') || errorLower.includes('koşul') || errorLower.includes('terms')) {
+        // Highlight Terms checkbox
+        const termsCheckbox = document.getElementById('accept_terms');
+        const termsLabel = termsCheckbox.parentElement;
+        termsLabel.classList.add('bg-red-50', 'rounded', 'p-2', 'border', 'border-red-300');
+        
+        // Add error message
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error-message text-red-600 text-xs mt-1 font-semibold flex items-center gap-1';
+        errorDiv.innerHTML = `<span>⚠️</span><span>❌ Kullanım koşullarını kabul etmelisiniz</span>`;
+        termsLabel.appendChild(errorDiv);
+        
+        // Scroll to checkbox
+        termsLabel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        
+        // Shake animation
+        termsLabel.style.animation = 'shake 0.5s';
+        setTimeout(() => termsLabel.style.animation = '', 500);
+        
+        return; // Don't process as regular field
+    }
+    
+    // Highlight the field
+    if (fieldId) {
+        const field = document.getElementById(fieldId);
+        if (field) {
+            console.log('✅ Found field:', fieldId);
+            
+            // Add red border and background
+            field.classList.remove('border-gray-200');
+            field.classList.add('border-red-500', 'border-2', 'bg-red-50');
+            
+            // Add error message below field
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message text-red-600 text-xs mt-1 font-semibold flex items-center gap-1';
+            errorDiv.innerHTML = `<span>⚠️</span><span>${customMessage}</span>`;
+            field.parentElement.appendChild(errorDiv);
+            
+            // Scroll to field
+            field.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            
+            // Focus field after scroll
+            setTimeout(() => {
+                field.focus();
+                // Shake animation
+                field.style.animation = 'shake 0.5s';
+                setTimeout(() => field.style.animation = '', 500);
+            }, 500);
+        } else {
+            console.error('❌ Field not found:', fieldId);
+        }
+    } else {
+        console.warn('⚠️ No field mapping for error:', errorMessage);
+        // Show generic error at top of form
+        showNotification('❌ ' + errorMessage, 'error');
+    }
+}
+
+// Add shake animation
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+        20%, 40%, 60%, 80% { transform: translateX(5px); }
+    }
+`;
+document.head.appendChild(style);
+</script>
+<script src="/static/js/mobile-menu.js"></script>
+</body>
+</html>

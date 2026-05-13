@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="tr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>İlan Detayı | UniEv</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!-- Preconnect to Google Maps servers for faster loading -->
+<link rel="preconnect" href="https://mt0.google.com">
+<link rel="preconnect" href="https://mt1.google.com">
+<link rel="preconnect" href="https://mt2.google.com">
+<link rel="preconnect" href="https://mt3.google.com">
+<style>
+        /* Fix Leaflet map z-index issue */
+        .leaflet-pane,
+        .leaflet-top,
+        .leaflet-bottom {
+            z-index: 1 !important;
+        }
+        .leaflet-control-container {
+            z-index: 2 !important;
+        }
+        
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background-color: #F8FAFA;
+        }
+        /* Force text wrapping for long words */
+        .description-text {
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            word-break: break-word;
+            hyphens: auto;
+            white-space: pre-wrap;
+        }
+        .navbar-gradient {
+            background: linear-gradient(90deg, #0f766e 0%, #14b8a6 50%, #0f766e 100%);
+            height: 3px;
+        }
+    </style>
+<link rel="stylesheet" href="/static/css/mobile.css">
+</head>
+<body class="font-body-md text-on-background selection:bg-secondary-container">
+<header class="fixed top-0 w-full h-20 bg-white border-b border-slate-200 shadow-sm z-50">
+<div class="max-w-7xl mx-auto flex justify-between items-center h-20 px-6">
+<div class="flex items-center gap-2">
+<a href="/">
+<img alt="UniEv Logo" class="h-30 w-30 object-contain" src="/static/images/Logo.png" onerror="this.style.display='none'"/>
+</a>
+</div>
+<nav class="hidden md:flex gap-8 font-manrope text-sm font-medium" id="mainNav">
+<!-- Navigation will be dynamically populated -->
+</nav>
+</div>
+<div class="navbar-gradient"></div>
+</header>
+<main class="max-w-7xl mx-auto px-6 pt-28 pb-16">
+<nav class="flex items-center gap-2 mb-6 text-label-md font-label-md text-outline">
+<a class="hover:text-primary transition-colors" href="/">Ana Sayfa</a>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+<a class="hover:text-primary transition-colors" href="/listings">İlanlar</a>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+<span class="text-on-background">İlan Detayı</span>
+</nav>
+<div id="listing-detail"></div>
+</main>
+<footer class="w-full py-8 mt-auto bg-white border-t border-slate-200">
+<div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center px-6">
+<div class="font-manrope text-xs text-slate-500 mb-4 md:mb-0">
+                © 2026 UniEv University Housing
+            </div>
+<div class="flex flex-wrap justify-center gap-6">
+<a class="font-manrope text-xs text-slate-500 hover:text-teal-700 underline transition-colors duration-200" href="#">KVKK</a>
+<a class="font-manrope text-xs text-slate-500 hover:text-teal-700 underline transition-colors duration-200" href="#">Gizlilik</a>
+<a class="font-manrope text-xs text-slate-500 hover:text-teal-700 underline transition-colors duration-200" href="#">Çerez Politikası</a>
+<a class="font-manrope text-xs text-slate-500 hover:text-teal-700 underline transition-colors duration-200" href="#">Kullanım Koşulları</a>
+<a class="font-manrope text-xs text-slate-500 hover:text-teal-700 underline transition-colors duration-200" href="#">Yardım</a>
+</div>
+</div>
+</footer>
+<script>
+// Check authentication and setup navigation
+const token = localStorage.getItem('token');
+const userStr = localStorage.getItem('user');
+const user = userStr ? JSON.parse(userStr) : null;
+
+// Dynamic navigation based on role
+function setupNavigation() {
+    const nav = document.getElementById('mainNav');
+    const activeClass = 'text-teal-700 border-b-2 border-teal-700 pb-1 cursor-pointer transition-all duration-200';
+    const normalClass = 'text-slate-600 hover:text-teal-600 transition-colors cursor-pointer duration-200';
+    
+    if (!user) {
+        nav.innerHTML = `
+            <a class="${normalClass}" href="/">Ana Sayfa</a>
+            <a class="${activeClass}" href="/listings">İlanlar</a>
+            <a class="${normalClass}" href="/help">Yardım</a>
+            <a class="${normalClass}" href="/login">Giriş</a>
+            <a class="${normalClass}" href="/register">Kayıt Ol</a>
+        `;
+        return;
+    }
+    
+    if (user.role === 'LANDLORD') {
+        nav.innerHTML = `
+            <a class="${normalClass}" href="/">Ana Sayfa</a>
+            <a class="${activeClass}" href="/listings">İlanlar</a>
+            <a class="${normalClass}" href="/create-listing">İlan Oluştur</a>
+            <a class="${normalClass}" href="/messages">Mesajlar</a>
+            <a class="${normalClass}" href="/profile">Profil</a>
+            <a class="${normalClass}" href="/help">Yardım</a>
+            <a class="${normalClass}" href="#" onclick="logout()">Çıkış</a>
+        `;
+    } else if (user.role === 'ADMIN') {
+        nav.innerHTML = `
+            <a class="${normalClass}" href="/">Ana Sayfa</a>
+            <a class="${activeClass}" href="/listings">İlanlar</a>
+            <a class="${normalClass}" href="/admin">Admin Panel</a>
+            <a class="${normalClass}" href="/messages">Mesajlar</a>
+            <a class="${normalClass}" href="/profile">Profil</a>
+            <a class="${normalClass}" href="/help">Yardım</a>
+            <a class="${normalClass}" href="#" onclick="logout()">Çıkış</a>
+        `;
+    } else {
+        // STUDENT
+        nav.innerHTML = `
+            <a class="${normalClass}" href="/">Ana Sayfa</a>
+            <a class="${activeClass}" href="/listings">İlanlar</a>
+            <a class="${normalClass}" href="/match">Eşleşme</a>
+            <a class="${normalClass}" href="/messages">Mesajlar</a>
+            <a class="${normalClass}" href="/profile">Profil</a>
+            <a class="${normalClass}" href="/help">Yardım</a>
+            <a class="${normalClass}" href="#" onclick="logout()">Çıkış</a>
+        `;
+    }
+}
+
+setupNavigation();
+
+function logout() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.href = '/login';
+}
+
+function startConversation(ownerId) {
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+        showToast('Mesaj göndermek için giriş yapmalısınız', 'warning');
+        setTimeout(() => window.location.href = '/login', 1500);
+        return;
+    }
+    
+    // Redirect to messages page with the owner's ID
+    window.location.href = `/messages?with=${ownerId}`;
+}
+
+function viewUserProfile(userId) {
+    // Redirect to user profile page
+    window.location.href = `/user/${userId}`;
+}
+
+function showReportModal(listingId) {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        showToast('Rapor göndermek için giriş yapmalısınız', 'warning');
+        setTimeout(() => window.location.href = '/login', 1500);
+        return;
+    }
+    
+    const modal = document.createElement('div');
+    modal.id = 'reportModal';
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+    modal.innerHTML = `
+        <div class="bg-white rounded-xl p-6 max-w-md w-full">
+            <h3 class="text-xl font-bold text-slate-900 mb-4">İlanı Bildir</h3>
+            <div class="mb-4">
+                <label class="block text-sm font-semibold text-slate-700 mb-2">Rapor Türü</label>
+                <select id="reportType" class="w-full rounded-lg border-slate-200 focus:border-red-600 focus:ring-red-600">
+                    <option value="FRAUD">Dolandırıcılık</option>
+                    <option value="INAPPROPRIATE">Uygunsuz İçerik</option>
+                    <option value="SPAM">Spam</option>
+                    <option value="FAKE">Sahte İlan</option>
+                    <option value="OTHER">Diğer</option>
+                </select>
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-semibold text-slate-700 mb-2">Açıklama</label>
+                <textarea id="reportDescription" class="w-full rounded-lg border-slate-200 focus:border-red-600 focus:ring-red-600" rows="4" placeholder="Lütfen sorunu detaylı açıklayın..."></textarea>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="closeReportModal()" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 py-2 rounded-lg font-semibold transition-all">
+                    İptal
+                </button>
+                <button onclick="submitReport('${listingId}')" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg font-semibold transition-all">
+                    Gönder
+                </button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+function closeReportModal() {
+    const modal = document.getElementById('reportModal');
+    if (modal) modal.remove();
+}
+
+async function submitReport(listingId) {
+    const token = localStorage.getItem('token');
+    const reportType = document.getElementById('reportType').value;
+    const description = document.getElementById('reportDescription').value;
+    
+    if (!description.trim()) {
+        showToast('Lütfen bir açıklama girin', 'warning');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/reports', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                listing_id: listingId,
+                report_type: reportType,
+                description: description
+            })
+        });
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || 'Rapor gönderilemedi');
+        }
+        
+        closeReportModal();
+        showToast('Raporunuz başarıyla gönderildi. Admin ekibimiz en kısa sürede inceleyecektir.', 'success', 4000);
+        
+    } catch (error) {
+        showToast(error.message, 'error');
+    }
+}
+
+// Lightbox functionality
+let currentPhotoIndex = 0;
+let allPhotos = [];
+
+function openLightbox(index) {
+    currentPhotoIndex = index;
+    const lightbox = document.getElementById('lightbox');
+    lightbox.classList.remove('hidden');
+    updateLightboxPhoto();
+}
+
+function closeLightbox() {
+    document.getElementById('lightbox').classList.add('hidden');
+}
+
+function nextPhoto() {
+    currentPhotoIndex = (currentPhotoIndex + 1) % allPhotos.length;
+    updateLightboxPhoto();
+}
+
+function prevPhoto() {
+    currentPhotoIndex = (currentPhotoIndex - 1 + allPhotos.length) % allPhotos.length;
+    updateLightboxPhoto();
+}
+
+function updateLightboxPhoto() {
+    document.getElementById('lightboxMainPhoto').src = allPhotos[currentPhotoIndex];
+    
+    // Update thumbnails
+    const thumbnails = document.querySelectorAll('.lightbox-thumbnail');
+    thumbnails.forEach((thumb, idx) => {
+        if (idx === currentPhotoIndex) {
+            thumb.classList.add('ring-4', 'ring-teal-600');
+            thumb.classList.remove('opacity-60');
+        } else {
+            thumb.classList.remove('ring-4', 'ring-teal-600');
+            thumb.classList.add('opacity-60');
+        }
+    });
+}
+
+async function deleteListing(listingId) {
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+        showToast('Bu işlem için giriş yapmalısınız', 'warning');
+        setTimeout(() => window.location.href = '/login', 1500);
+        return;
+    }
+    
+    const confirmed = await showConfirm(
+        'Bu ilanı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.',
+        { 
+            title: 'İlanı Sil',
+            confirmText: 'Sil',
+            cancelText: 'İptal',
+            dangerous: true
+        }
+    );
+    
+    if (!confirmed) return;
+    
+    try {
+        const response = await fetch(`/api/listings/${listingId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (response.ok) {
+            showToast('İlan başarıyla silindi', 'success');
+            setTimeout(() => window.location.href = '/profile', 1500);
+        } else {
+            const error = await response.json();
+            showToast(error.detail || 'İlan silinemedi', 'error');
+        }
+    } catch (error) {
+        console.error('Error deleting listing:', error);
+        showToast('Bir hata oluştu', 'error');
+    }
+}
+
+async function loadListing() {
+    const listingId = window.location.pathname.split('/').pop();
+    
+    try {
+        const response = await fetch(`/api/listings/${listingId}`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const listing = await response.json();
+        allPhotos = listing.photos || [];
+        
+        // Helper function to escape HTML and preserve line breaks
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML.replace(/\n/g, '<br>');
+        }
+        
+        // Helper function to safely get value or default
+        function safe(value, defaultValue = '') {
+            return value !== null && value !== undefined ? value : defaultValue;
+        }
+        
+        // Check if current user is the owner
+        const isOwner = user && listing.owner_id === user.id;
+        
+        document.getElementById('listing-detail').innerHTML = `
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <div class="lg:col-span-8 space-y-8">
+                    ${listing.photos && listing.photos.length > 0 ? `
+                    <div class="relative w-full aspect-[1.54] rounded-xl overflow-hidden bg-surface-container shadow-sm border border-[#ECEFF1] cursor-pointer hover:opacity-95 transition-opacity" onclick="openLightbox(0)">
+                        <img src="${listing.photos[0]}" alt="${listing.title}" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<div class=\\'w-full h-full bg-gray-200 flex items-center justify-center\\'><span class=\\'text-gray-400 text-4xl\\'>🏠</span></div>'"/>
+                        <div class="absolute bottom-4 right-4 bg-black bg-opacity-60 text-white px-3 py-1 rounded-lg text-sm">
+                            <span class="material-symbols-outlined text-sm">photo_library</span>
+                            ${listing.photos.length} fotoğraf
+                        </div>
+                    </div>
+                    ${listing.photos.length > 1 ? `
+                    <div class="grid grid-cols-4 gap-4">
+                        ${listing.photos.slice(1, 5).map((photo, idx) => `
+                            <div class="aspect-square rounded-lg overflow-hidden bg-gray-200 cursor-pointer hover:opacity-80 transition-opacity" onclick="openLightbox(${idx + 1})">
+                                <img src="${photo}" alt="Detail photo" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<div class=\\'w-full h-full bg-gray-200 flex items-center justify-center\\'><span class=\\'text-gray-400 text-2xl\\'>🏠</span></div>'"/>
+                            </div>
+                        `).join('')}
+                    </div>
+                    ` : ''}
+                    ` : `
+                    <div class="relative w-full aspect-[1.54] rounded-xl overflow-hidden bg-surface-container shadow-sm border border-[#ECEFF1]">
+                        <div class="w-full h-full bg-gray-200 flex items-center justify-center">
+                            <span class="text-gray-400 text-4xl">🏠</span>
+                        </div>
+                    </div>
+                    `}
+                    <div class="bg-white border border-[#ECEFF1] rounded-xl p-8 shadow-[0px_4px_20px_rgba(0,121,107,0.05)]">
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                            <div>
+                                <h1 class="font-headline-lg text-headline-lg text-on-background mb-1">${escapeHtml(listing.title)}</h1>
+                                <div class="flex items-center gap-2 text-outline">
+                                    <span class="material-symbols-outlined text-[18px]">location_on</span>
+                                    <span class="text-body-md font-body-md">${escapeHtml(safe(listing.city, 'Şehir belirtilmemiş'))}, ${escapeHtml(safe(listing.district))}</span>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-headline-md font-headline-md text-primary">₺${listing.price.toLocaleString('tr-TR')}/ay</div>
+                                <div class="inline-flex items-center gap-2 ${listing.fraud_score > 50 ? 'bg-red-100' : 'bg-green-100'} px-3 py-1 rounded-full mt-2">
+                                    <span class="text-label-md font-label-md ${listing.fraud_score > 50 ? 'text-red-700' : 'text-green-700'}">Risk: ${safe(listing.fraud_score, 'N/A')}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-8">
+                            <h2 class="font-headline-md text-headline-md mb-4">Açıklama</h2>
+                            <p class="text-body-md text-on-surface-variant leading-relaxed description-text">
+                                ${escapeHtml(listing.description)}
+                            </p>
+                        </div>
+                        ${listing.rules ? `
+                        <div class="mt-8 pt-8 border-t border-slate-200">
+                            <h2 class="font-headline-md text-headline-md mb-4">Ev Kuralları</h2>
+                            <p class="text-body-md text-on-surface-variant leading-relaxed description-text">
+                                ${escapeHtml(listing.rules)}
+                            </p>
+                        </div>
+                        ` : ''}
+                        ${listing.address ? `
+                        <div class="mt-8 pt-8 border-t border-slate-200">
+                            <h2 class="font-headline-md text-headline-md mb-4">Adres</h2>
+                            <p class="text-body-md text-on-surface-variant leading-relaxed description-text mb-4">
+                                ${escapeHtml(listing.address)}
+                            </p>
+                            ${listing.latitude && listing.longitude ? `
+                            <div id="map" class="w-full h-96 rounded-xl border-2 border-teal-200 shadow-lg"></div>
+                            ` : ''}
+                        </div>
+                        ` : listing.latitude && listing.longitude ? `
+                        <div class="mt-8 pt-8 border-t border-slate-200">
+                            <h2 class="font-headline-md text-headline-md mb-4">Konum</h2>
+                            <div id="map" class="w-full h-96 rounded-xl border-2 border-teal-200 shadow-lg"></div>
+                        </div>
+                        ` : ''}
+                    </div>
+                </div>
+                <div class="lg:col-span-4 space-y-6">
+                    <div class="bg-white border border-[#ECEFF1] rounded-xl p-6 shadow-[0px_4px_20px_rgba(0,121,107,0.05)]">
+                        <h3 class="text-label-md font-label-md text-outline mb-4">İlan Sahibi</h3>
+                        <div class="flex items-center gap-4 mb-4 cursor-pointer hover:bg-slate-50 p-2 rounded-lg transition-colors" onclick="viewUserProfile('${listing.owner_id}')">
+                            <img src="${listing.owner_photo || '/static/images/default-avatar.svg'}" 
+                                 alt="Profile" 
+                                 class="w-16 h-16 rounded-full object-cover border-2 border-slate-200"
+                                 onerror="this.src='/static/images/default-avatar.svg'" />
+                            <div class="flex-1">
+                                <p class="font-semibold text-lg">${escapeHtml(safe(listing.owner_name, 'Bilinmiyor'))}</p>
+                                ${listing.owner_phone ? `<p class="text-sm text-slate-600 mt-1">📞 ${escapeHtml(listing.owner_phone)}</p>` : ''}
+                                ${listing.owner_email ? `<p class="text-sm text-slate-600 mt-1">📧 ${escapeHtml(listing.owner_email)}</p>` : ''}
+                                <p class="text-xs text-teal-600 mt-1">Profili görüntüle →</p>
+                            </div>
+                        </div>
+                        ${listing.owner_bio ? `
+                        <div class="mb-4 p-3 bg-slate-50 rounded-lg">
+                            <p class="text-xs font-semibold text-slate-600 mb-1">Hakkında</p>
+                            <p class="text-sm text-slate-700 leading-relaxed">${escapeHtml(listing.owner_bio)}</p>
+                        </div>
+                        ` : ''}
+                        ${isOwner ? `
+                        <a href="/edit-listing/${listing.id}" class="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white py-4 rounded-lg font-label-md transition-all duration-200 flex items-center justify-center gap-2 mb-3">
+                            <span class="material-symbols-outlined">edit</span>
+                            İlanı Düzenle
+                        </a>
+                        <button onclick="deleteListing('${listing.id}')" class="w-full bg-red-600 hover:bg-red-700 text-white py-4 rounded-lg font-label-md transition-all duration-200 flex items-center justify-center gap-2">
+                            <span class="material-symbols-outlined">delete</span>
+                            İlanı Sil
+                        </button>
+                        ` : `
+                        <button onclick="startConversation('${listing.owner_id}')" class="w-full bg-gradient-to-r from-teal-700 to-teal-600 hover:from-teal-800 hover:to-teal-700 text-white py-4 rounded-lg font-label-md transition-all duration-200 flex items-center justify-center gap-2 mb-3">
+                            <span class="material-symbols-outlined">mail</span>
+                            Mesaj Gönder
+                        </button>
+                        <button onclick="showReportModal('${listing.id}')" class="w-full bg-red-50 hover:bg-red-100 text-red-700 py-3 rounded-lg font-label-md transition-all duration-200 flex items-center justify-center gap-2 border border-red-200">
+                            <span class="material-symbols-outlined">flag</span>
+                            İlanı Bildir
+                        </button>
+                        `}
+                    </div>
+                    <div class="bg-white border border-[#ECEFF1] rounded-xl p-6 shadow-[0px_4px_20px_rgba(0,121,107,0.05)]">
+                        <h3 class="text-label-md font-label-md text-outline mb-4">İlan Bilgileri</h3>
+                        <div class="space-y-3 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-slate-600">Durum:</span>
+                                <span class="font-semibold text-slate-900">${listing.status === 'ACTIVE' ? 'Aktif' : listing.status}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-slate-600">Risk Skoru:</span>
+                                <span class="font-semibold ${listing.fraud_score > 50 ? 'text-red-600' : 'text-green-600'}">${safe(listing.fraud_score, 'N/A')}</span>
+                            </div>
+                            ${listing.safety_index ? `
+                            <div class="flex justify-between">
+                                <span class="text-slate-600">Güvenlik İndeksi:</span>
+                                <span class="font-semibold text-slate-900">${listing.safety_index}</span>
+                            </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Add lightbox HTML after rendering listing
+        const lightboxHTML = `
+            <div id="lightbox" class="hidden fixed inset-0 bg-black bg-opacity-95 z-50">
+                <button onclick="closeLightbox()" class="absolute top-4 right-4 text-white text-4xl hover:text-gray-300 z-50 w-12 h-12 flex items-center justify-center">×</button>
+                
+                <!-- Main Photo -->
+                <div class="relative w-full h-full flex items-center justify-center p-4 pb-32">
+                    <button onclick="prevPhoto()" class="absolute left-4 text-white text-6xl hover:text-gray-300 z-40 w-16 h-16 flex items-center justify-center">‹</button>
+                    <img id="lightboxMainPhoto" class="max-w-full max-h-full object-contain" />
+                    <button onclick="nextPhoto()" class="absolute right-4 text-white text-6xl hover:text-gray-300 z-40 w-16 h-16 flex items-center justify-center">›</button>
+                </div>
+                
+                <!-- Thumbnails -->
+                <div class="absolute bottom-0 left-0 right-0 bg-black bg-opacity-80 p-4 overflow-x-auto">
+                    <div id="lightboxThumbnails" class="flex gap-3 justify-center">
+                        ${allPhotos.map((photo, idx) => `
+                            <img src="${photo}" 
+                                 class="lightbox-thumbnail w-20 h-20 object-cover rounded cursor-pointer opacity-60 hover:opacity-100 transition-all border-2 border-transparent" 
+                                 onclick="currentPhotoIndex = ${idx}; updateLightboxPhoto();" />
+                        `).join('')}
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.getElementById('listing-detail').innerHTML += lightboxHTML;
+        
+        // Initialize Google Map if coordinates exist
+        if (listing.latitude && listing.longitude) {
+            initializeMap(listing.latitude, listing.longitude, listing.title);
+        }
+    } catch (error) {
+        console.error('Error loading listing:', error);
+        document.getElementById('listing-detail').innerHTML = `
+            <div class="text-center py-20">
+                <div class="text-6xl mb-4">⚠️</div>
+                <p class="text-red-500 text-lg mb-2">İlan yüklenemedi</p>
+                <p class="text-gray-400 text-sm">${error.message}</p>
+                <a href="/listings" class="inline-block mt-4 px-6 py-2 bg-teal-700 text-white rounded-lg hover:bg-teal-800">İlanlara Dön</a>
+            </div>
+        `;
+    }
+}
+
+function initializeMap(lat, lng, title) {
+    try {
+        const mapElement = document.getElementById('map');
+        if (!mapElement) return;
+        
+        // Use Google Maps Embed (FREE - no API key needed!)
+        // This shows full street names, POIs, and all the details just like regular Google Maps
+        const iframe = document.createElement('iframe');
+        iframe.width = '100%';
+        iframe.height = '100%';
+        iframe.style.border = '0';
+        iframe.style.borderRadius = '0.75rem';
+        iframe.loading = 'lazy';
+        iframe.referrerPolicy = 'no-referrer-when-downgrade';
+        iframe.src = `https://www.google.com/maps?q=${lat},${lng}&output=embed&z=16`;
+        
+        mapElement.innerHTML = '';
+        mapElement.appendChild(iframe);
+        
+        // Add Google Maps button dynamically after map is initialized
+        const googleMapsBtn = document.createElement('a');
+        googleMapsBtn.href = `https://www.google.com/maps?q=${lat},${lng}`;
+        googleMapsBtn.target = '_blank';
+        googleMapsBtn.rel = 'noopener noreferrer';
+        googleMapsBtn.className = 'mt-3 inline-flex items-center gap-2 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg font-semibold transition-colors text-sm shadow-md';
+        googleMapsBtn.innerHTML = `
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            </svg>
+            Google Maps'te Göster
+        `;
+        mapElement.parentElement.appendChild(googleMapsBtn);
+        
+    } catch (error) {
+        console.error('Map initialization error:', error);
+        const mapElement = document.getElementById('map');
+        if (mapElement) {
+            mapElement.innerHTML = '<div class="flex items-center justify-center h-full bg-slate-100 rounded-xl"><p class="text-slate-500">Harita yüklenemedi</p></div>';
+        }
+    }
+}
+
+loadListing();
+</script>
+<script src="/static/js/toast.js"></script>
+<script src="/static/js/mobile-menu.js"></script>
+</body></html>

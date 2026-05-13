@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>UniEv - Yardım ve SSS</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .faq-item {
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        .faq-answer.active {
+            max-height: 500px;
+        }
+        .navbar-gradient {
+            background: linear-gradient(90deg, #0f766e 0%, #14b8a6 50%, #0f766e 100%);
+            height: 3px;
+        }
+    </style>
+<link rel="stylesheet" href="/static/css/mobile.css">
+</head>
+<body class="bg-slate-50 min-h-screen flex flex-col">
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+<a href="/">
+<img alt="UniEv Logo" class="h-30 w-30 object-contain" src="/static/images/Logo.png" onerror="this.style.display='none'"/>
+</a>
+</div>
+            <!-- Desktop Navigation -->
+            <nav class="hidden md:flex items-center space-x-6 text-sm font-medium text-slate-500" id="mainNav">
+                <!-- Navigation will be dynamically populated -->
+            </nav>
+            <!-- Mobile menu button will be added by mobile-menu.js -->
+        </div>
+        <!-- Gradient Line -->
+        <div class="navbar-gradient"></div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 py-12 flex-grow">
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-slate-900 mb-4">Yardım Merkezi</h1>
+            <p class="text-slate-600 text-lg">Sıkça sorulan sorular ve yardım konuları</p>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            <div class="bg-white rounded-xl border border-slate-100 p-6 hover:shadow-lg transition-shadow">
+                <div class="text-3xl mb-3">🏠</div>
+                <h3 class="font-bold text-lg mb-2">İlan Verme</h3>
+                <p class="text-sm text-slate-600">Konut ilanı nasıl oluşturulur?</p>
+            </div>
+            <div class="bg-white rounded-xl border border-slate-100 p-6 hover:shadow-lg transition-shadow">
+                <div class="text-3xl mb-3">🔍</div>
+                <h3 class="font-bold text-lg mb-2">İlan Arama</h3>
+                <p class="text-sm text-slate-600">Filtreleme ve arama özellikleri</p>
+            </div>
+            <div class="bg-white rounded-xl border border-slate-100 p-6 hover:shadow-lg transition-shadow">
+                <div class="text-3xl mb-3">🤝</div>
+                <h3 class="font-bold text-lg mb-2">Eşleşme</h3>
+                <p class="text-sm text-slate-600">Ev arkadaşı eşleştirme sistemi</p>
+            </div>
+        </div>
+
+        <!-- FAQ Section -->
+        <div class="bg-white rounded-xl border border-slate-100 p-8">
+            <h2 class="text-2xl font-bold mb-6">Sıkça Sorulan Sorular</h2>
+            
+            <div class="space-y-4">
+                <div class="faq-item pb-4">
+                    <button class="w-full text-left flex justify-between items-center font-semibold text-slate-900 hover:text-teal-700 transition-colors" onclick="toggleFaq(this)">
+                        <span>UniEv nedir ve nasıl çalışır?</span>
+                        <svg class="w-5 h-5 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div class="faq-answer mt-3 text-slate-600 text-sm">
+                        UniEv, üniversite öğrencileri için güvenli konut bulma ve ev arkadaşı eşleştirme platformudur. 
+                        FraudScore ile dolandırıcılık riski analizi, SafetyMap ile mahalle güvenlik değerlendirmesi ve 
+                        MatchEngine ile uyumlu ev arkadaşı önerileri sunar.
+                    </div>
+                </div>
+
+                <div class="faq-item pb-4">
+                    <button class="w-full text-left flex justify-between items-center font-semibold text-slate-900 hover:text-teal-700 transition-colors" onclick="toggleFaq(this)">
+                        <span>Nasıl kayıt olabilirim?</span>
+                        <svg class="w-5 h-5 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div class="faq-answer mt-3 text-slate-600 text-sm">
+                        "Kayıt Ol" butonuna tıklayarak hesap türünüzü (Öğrenci veya Ev Sahibi) seçin. 
+                        E-posta adresiniz, şifreniz ve kişisel bilgilerinizi girin. KVKK ve Kullanım Koşulları'nı 
+                        kabul ederek kaydınızı tamamlayın. E-posta doğrulaması yapmanız gerekebilir.
+                    </div>
+                </div>
+
+                <div class="faq-item pb-4">
+                    <button class="w-full text-left flex justify-between items-center font-semibold text-slate-900 hover:text-teal-700 transition-colors" onclick="toggleFaq(this)">
+                        <span>FraudScore nedir?</span>
+                        <svg class="w-5 h-5 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div class="faq-answer mt-3 text-slate-600 text-sm">
+                        FraudScore, her ilanın dolandırıcılık riskini 0-100 arasında değerlendiren otomatik bir sistemdir. 
+                        Düşük skor güvenli, yüksek skor riskli anlamına gelir. İlan fiyatı, açıklama kalitesi, 
+                        fotoğraf sayısı ve ev sahibi geçmişi gibi faktörler değerlendirilir.
+                    </div>
+                </div>
+
+                <div class="faq-item pb-4">
+                    <button class="w-full text-left flex justify-between items-center font-semibold text-slate-900 hover:text-teal-700 transition-colors" onclick="toggleFaq(this)">
+                        <span>SafetyMap nasıl kullanılır?</span>
+                        <svg class="w-5 h-5 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div class="faq-answer mt-3 text-slate-600 text-sm">
+                        SafetyMap, mahalle güvenlik seviyelerini harita üzerinde gösterir. Her bölge için SafetyIndex 
+                        (0-100) hesaplanır. Yüksek indeks daha güvenli bölge anlamına gelir. İlan detaylarında 
+                        konumun güvenlik puanını görebilirsiniz.
+                    </div>
+                </div>
+
+                <div class="faq-item pb-4">
+                    <button class="w-full text-left flex justify-between items-center font-semibold text-slate-900 hover:text-teal-700 transition-colors" onclick="toggleFaq(this)">
+                        <span>Ev arkadaşı eşleştirme nasıl çalışır?</span>
+                        <svg class="w-5 h-5 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div class="faq-answer mt-3 text-slate-600 text-sm">
+                        Profilinizde uyku düzeni, temizlik hassasiyeti, bütçe, sigara/evcil hayvan tercihleri gibi 
+                        bilgileri doldurun. MatchEngine algoritması bu bilgilere göre size uyumlu ev arkadaşları önerir. 
+                        Uyum yüzdesi ne kadar yüksekse, yaşam tarzınız o kadar benzerdir.
+                    </div>
+                </div>
+
+                <div class="faq-item pb-4">
+                    <button class="w-full text-left flex justify-between items-center font-semibold text-slate-900 hover:text-teal-700 transition-colors" onclick="toggleFaq(this)">
+                        <span>İlan nasıl oluşturabilirim?</span>
+                        <svg class="w-5 h-5 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div class="faq-answer mt-3 text-slate-600 text-sm">
+                        Ev Sahibi hesabıyla giriş yapın. "İlan Oluştur" butonuna tıklayın. Konut bilgilerini 
+                        (başlık, açıklama, fiyat, konum, özellikler) doldurun. Fotoğraf ekleyin. İlanınız 
+                        yayınlandıktan sonra otomatik FraudScore analizi yapılır.
+                    </div>
+                </div>
+
+                <div class="faq-item pb-4">
+                    <button class="w-full text-left flex justify-between items-center font-semibold text-slate-900 hover:text-teal-700 transition-colors" onclick="toggleFaq(this)">
+                        <span>Verilerim güvende mi? (KVKK)</span>
+                        <svg class="w-5 h-5 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div class="faq-answer mt-3 text-slate-600 text-sm">
+                        Evet, UniEv KVKK (Kişisel Verilerin Korunması Kanunu) uyumludur. Verileriniz şifrelenmiş 
+                        olarak saklanır. İstediğiniz zaman verilerinizi görüntüleyebilir, düzenleyebilir veya 
+                        silebilirsiniz. Gizlilik ayarlarınızı profil sayfanızdan yönetebilirsiniz.
+                    </div>
+                </div>
+
+                <div class="faq-item pb-4">
+                    <button class="w-full text-left flex justify-between items-center font-semibold text-slate-900 hover:text-teal-700 transition-colors" onclick="toggleFaq(this)">
+                        <span>Şüpheli bir ilan nasıl bildirilir?</span>
+                        <svg class="w-5 h-5 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div class="faq-answer mt-3 text-slate-600 text-sm">
+                        İlan detay sayfasında "Bildir" butonuna tıklayın. Rapor türünü seçin (dolandırıcılık, 
+                        uygunsuz içerik, yanlış bilgi vb.) ve açıklama ekleyin. Admin ekibimiz raporunuzu 
+                        inceleyecek ve gerekli işlemi yapacaktır.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Section -->
+        <div class="mt-12 bg-teal-50 rounded-xl border border-teal-100 p-8 text-center">
+            <h3 class="text-xl font-bold text-slate-900 mb-3">Sorunuz mu var?</h3>
+            <p class="text-slate-600 mb-6">Aradığınız cevabı bulamadınız mı? Bizimle iletişime geçin.</p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="mailto:destek@uniev.com" class="inline-flex items-center justify-center bg-teal-700 text-white px-6 py-3 rounded-lg hover:bg-teal-800 transition-all">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                    </svg>
+                    E-posta Gönder
+                </a>
+                <a href="/messages" class="inline-flex items-center justify-center bg-white text-teal-700 border-2 border-teal-700 px-6 py-3 rounded-lg hover:bg-teal-50 transition-all">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                    </svg>
+                    Canlı Destek
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-gradient-to-r from-teal-800 to-teal-700 py-8 mt-12">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-white">
+            <div>© 2026 UniEv - Öğrenciler için güvenli konut platformu</div>
+            <div class="flex flex-wrap justify-center gap-6">
+                <a class="hover:text-teal-200" href="#">KVKK</a>
+                <a class="hover:text-teal-200" href="#">Gizlilik</a>
+                <a class="hover:text-teal-200" href="#">Çerez Politikası</a>
+                <a class="hover:text-teal-200" href="#">Kullanım Koşulları</a>
+                <a class="hover:text-teal-200" href="/help">Yardım</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Check authentication on page load
+        const token = localStorage.getItem('token');
+        const userStr = localStorage.getItem('user');
+        const user = userStr ? JSON.parse(userStr) : null;
+
+        // Dynamic navigation based on role
+        function setupNavigation() {
+            const nav = document.getElementById('mainNav');
+            const activeClass = 'font-medium text-teal-700 border-b-2 border-teal-700 pb-1 cursor-pointer transition-all duration-200';
+            const normalClass = 'font-medium text-slate-600 hover:text-teal-600 transition-colors cursor-pointer transition-all duration-200';
+            
+            if (!user) {
+                nav.innerHTML = `
+                    <a class="${normalClass}" href="/">Ana Sayfa</a>
+                    <a class="${normalClass}" href="/listings">İlanlar</a>
+                    <a class="${activeClass}" href="/help">Yardım</a>
+                    <a class="${normalClass}" href="/login">Giriş</a>
+                    <a class="${normalClass}" href="/register">Kayıt Ol</a>
+                `;
+                return;
+            }
+            
+            if (user.role === 'LANDLORD') {
+                nav.innerHTML = `
+                    <a class="${normalClass}" href="/">Ana Sayfa</a>
+                    <a class="${normalClass}" href="/listings">İlanlar</a>
+                    <a class="${normalClass}" href="/create-listing">İlan Oluştur</a>
+                    <a class="${normalClass}" href="/messages">Mesajlar</a>
+                    <a class="${normalClass}" href="/profile">Profil</a>
+                    <a class="${activeClass}" href="/help">Yardım</a>
+                    <a class="${normalClass}" href="#" onclick="logout()">Çıkış</a>
+                `;
+            } else if (user.role === 'ADMIN') {
+                nav.innerHTML = `
+                    <a class="${normalClass}" href="/">Ana Sayfa</a>
+                    <a class="${normalClass}" href="/listings">İlanlar</a>
+                    <a class="${normalClass}" href="/admin">Admin Panel</a>
+                    <a class="${normalClass}" href="/messages">Mesajlar</a>
+                    <a class="${normalClass}" href="/profile">Profil</a>
+                    <a class="${activeClass}" href="/help">Yardım</a>
+                    <a class="${normalClass}" href="#" onclick="logout()">Çıkış</a>
+                `;
+            } else {
+                // STUDENT
+                nav.innerHTML = `
+                    <a class="${normalClass}" href="/">Ana Sayfa</a>
+                    <a class="${normalClass}" href="/listings">İlanlar</a>
+                    <a class="${normalClass}" href="/match">Eşleşme</a>
+                    <a class="${normalClass}" href="/messages">Mesajlar</a>
+                    <a class="${normalClass}" href="/profile">Profil</a>
+                    <a class="${activeClass}" href="/help">Yardım</a>
+                    <a class="${normalClass}" href="#" onclick="logout()">Çıkış</a>
+                `;
+            }
+        }
+
+        setupNavigation();
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/login';
+        }
+        
+        function toggleFaq(button) {
+            const answer = button.nextElementSibling;
+            const icon = button.querySelector('svg');
+            
+            // Close all other FAQs
+            document.querySelectorAll('.faq-answer').forEach(item => {
+                if (item !== answer) {
+                    item.classList.remove('active');
+                }
+            });
+            document.querySelectorAll('.faq-item svg').forEach(svg => {
+                if (svg !== icon) {
+                    svg.classList.remove('rotate-180');
+                }
+            });
+            
+            // Toggle current FAQ
+            answer.classList.toggle('active');
+            icon.classList.toggle('rotate-180');
+        }
+    </script>
+<script src="/static/js/mobile-menu.js"></script>
+</body>
+</html>
