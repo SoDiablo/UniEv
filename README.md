@@ -8,7 +8,7 @@
 ![License](https://img.shields.io/badge/License-MIT-yellow)
 
 ## 🔗 Live Demo
-**[uniev.yourdomain.com](https://uniev.onrender.com)** ← add this after hosting
+**[https://uniev.onrender.com]**
 
 ---
 
