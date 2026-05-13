@@ -25,6 +25,9 @@
 | 🗺️ Google Maps | Interactive maps on listing pages |
 | 👮 Admin Panel | Full moderation system with AuditLog |
 
+## 💫 Full Ui View
+![UniEv Screenshot](fullView.jpg)
+
 ## 🛠️ Tech Stack
 
 - **Backend:** Python 3.12, FastAPI, SQLAlchemy ORM
