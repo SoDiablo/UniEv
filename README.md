@@ -341,7 +341,7 @@ The detailed report describing the improvements, refactoring, bug fixes, and enh
 
 Watch the project introduction video here:
 
-🔴 [YouTube Video Link Here](YOUR_LINK_HERE)
+[YouTube Video Link Here](https://youtu.be/BJKZr4FfNJQ)
 
 ---
 # 📂 Folder Structure
